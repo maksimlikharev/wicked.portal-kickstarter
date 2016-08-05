@@ -1,0 +1,59 @@
+extends layout
+
+block scripts
+    script(type='text/javascript').
+        function setAction(thisAction, index) {
+            $('#__action').val(thisAction);
+            if (index)
+                $('#__object').val(index);
+        }
+
+block content
+    .jumbotron
+        .container
+            h1 Chatbot configuration
+            
+            p wicked may integrate with both Slack and Rocket.Chat. Specify hook URLs and other configuration options.
+    
+    .container
+        form(role='form' method='post' action='/chatbot')
+
+            input(type='hidden' id='__action', name='__action' value='none')
+            input(type='hidden' id='__object', name='__object' value='none')
+
+            +checkPanel('glob.chatbot.useChatbot', glob, 'Use wicked\'s Chatbot')
+                +inputField('glob.chatbot.username', glob, 'Chatbot user name', 'This is how you want the Chatbot\'s messages to appear in your chat application; the user does not have to exist, it is just a name')
+                +inputField('glob.chatbot.icon_url', glob, 'Icon URL', 'An URL of an icon (about 32-40 pixel square) publicly available which the chatbot will use.')
+
+                .panel.panel-default
+                    .panel-heading
+                        table(width='100%')
+                            tr
+                                td
+                                    h4.panel-title Hook URLs
+                                td(style='text-align:right')
+                                    button(type='submit' onclick='setAction("addHook");').btn.btn-sm.btn-success Add Hook URL
+                    .panel-body
+                        each hookUrl, i in glob.chatbot.hookUrls
+                            - var thisHookName = 'glob.chatbot.hookUrls['+i+']'
+                            +inputField(thisHookName, glob, 'Hook URL', 'See documentation of Slack or Rocket.Chat how to get one of these.')
+                            p 
+                                button(type='submit' onclick='setAction("deleteHook", #{i});').btn.btn-sm.btn-danger Delete Hook URL
+                
+                br
+                // The possible events
+                .panel.panel-default
+                    .panel-heading
+                        h4.panel-title Send out a message
+                    .panel-body
+                        +checkBox('glob.chatbot.events.userSignedUp', glob, 'When a new user signs up to your portal')
+                        +checkBox('glob.chatbot.events.userValidatedEmail', glob, 'When a user successfully validated his email address')
+                        +checkBox('glob.chatbot.events.applicationAdded', glob, 'When an application has been created')
+                        +checkBox('glob.chatbot.events.applicationDeleted', glob, 'When an application has been deleted')
+                        +checkBox('glob.chatbot.events.subscriptionAdded', glob, 'When a new subscription to an API has been created')
+                        +checkBox('glob.chatbot.events.subscriptionDeleted', glob, 'When a subscription has been cancelled')
+                        +checkBox('glob.chatbot.events.approvalRequired', glob, 'When new subscription approval requests have been filed')
+                        +checkBox('glob.chatbot.events.lostPasswordRequest', glob, 'When a user requests to reset his or her password')
+                        +checkBox('glob.chatbot.events.verifyEmailRequest', glob, 'When a user wants to validate his or her email address')
+            
+            +renderButtons('/chatbot', '/email', '/templates')

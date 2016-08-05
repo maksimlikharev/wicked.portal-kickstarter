@@ -1,0 +1,15 @@
+extends layout
+
+block content
+    .jumbotron
+        .container
+            h1 SSL configuration
+            
+            p Configure whether you want wicked to create its own SSL certificates using Let's Encrypt, or if you want to provide your own.
+    
+    .container
+        form(role='form' method='post' action='/ssl')
+            
+            p (TODO)
+            
+            +renderButtons('/ssl', '/ipconfig', '/users')

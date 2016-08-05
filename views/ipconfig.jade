@@ -1,0 +1,129 @@
+extends layout
+
+block scripts
+    script(type='text/javascript').
+        /*
+        var localStaticPath = '#{localStaticPath}';
+        var localDynamicPath = '#{localDynamicPath}';
+
+        function populateContainerUrls() {
+            var envType = $('#envType').val();
+            
+            switch (envType) {
+                case "docker":
+                    $('#glob\\.network\\.schema').val('https');
+                    $('#glob\\.db\\.staticConfig').val('/var/portal-api/static');
+                    $('#glob\\.db\\.dynamicConfig').val('/var/portal-api/dynamic');
+                    $('#glob\\.network\\.apiUrl').val('http://portal-api:3001');
+                    $('#glob\\.network\\.portalUrl').val('http://portal:3000');
+                    $('#glob\\.network\\.kongAdapterUrl').val('http://portal-kong-adapter:3002');
+                    $('#glob\\.network\\.kongAdminUrl').val('http://kong:8001');
+                    $('#glob\\.network\\.mailerUrl').val('http://portal-mailer:3003');
+                    $('#glob\\.network\\.chatbotUrl').val('http://portal-chatbot:3004');
+                    break;
+                case "nodeDevOSX":
+                    $('#glob\\.network\\.schema').val('http');
+                    $('#glob\\.network\\.portalHost').val('$LOCAL_PORTAL_HOST');
+                    $('#glob\\.network\\.apiHost').val('$LOCAL_API_HOST');
+                    $('#glob\\.db\\.staticConfig').val(localStaticPath);
+                    $('#glob\\.db\\.dynamicConfig').val(localDynamicPath);
+                    $('#glob\\.network\\.apiUrl').val('http://localhost:3001');
+                    $('#glob\\.network\\.portalUrl').val('$LOCAL_PORTAL_URL');
+                    $('#glob\\.network\\.kongAdapterUrl').val('http://localhost:3002');
+                    $('#glob\\.network\\.kongAdminUrl').val('http://localhost:8001');
+                    $('#glob\\.network\\.mailerUrl').val('http://localhost:3003');
+                    $('#glob\\.network\\.chatbotUrl').val('http://localhost:3004');
+                    break;
+                case "nodeDevWin":
+                    $('#glob\\.network\\.schema').val('http');
+                    $('#glob\\.network\\.portalHost').val('$LOCAL_PORTAL_HOST');
+                    $('#glob\\.network\\.apiHost').val('$LOCAL_API_HOST');
+                    $('#glob\\.db\\.staticConfig').val(localStaticPath);
+                    $('#glob\\.db\\.dynamicConfig').val(localDynamicPath);
+                    $('#glob\\.network\\.apiUrl').val('http://localhost:3001');
+                    $('#glob\\.network\\.portalUrl').val('$LOCAL_PORTAL_URL');
+                    $('#glob\\.network\\.kongAdapterUrl').val('http://localhost:3002');
+                    $('#glob\\.network\\.kongAdminUrl').val('http://your.docker.host:8001');
+                    $('#glob\\.network\\.mailerUrl').val('http://localhost:3003');
+                    $('#glob\\.network\\.chatbotUrl').val('http://localhost:3004');
+                    break;
+                case "fullStack":
+                    $('#glob\\.network\\.schema').val('http');
+                    $('#glob\\.network\\.portalHost').val('$LOCAL_PORTAL_HOST');
+                    $('#glob\\.network\\.apiHost').val('$LOCAL_API_HOST');
+                    $('#glob\\.db\\.staticConfig').val(localStaticPath);
+                    $('#glob\\.db\\.dynamicConfig').val(localDynamicPath);
+                    $('#glob\\.network\\.apiUrl').val('http://localhost:3001');
+                    $('#glob\\.network\\.portalUrl').val('$LOCAL_PORTAL_URL');
+                    $('#glob\\.network\\.kongAdapterUrl').val('http://localhost:3002');
+                    $('#glob\\.network\\.kongAdminUrl').val('http://localhost:8001');
+                    $('#glob\\.network\\.mailerUrl').val('http://localhost:3003');
+                    $('#glob\\.network\\.chatbotUrl').val('http://localhost:3004');
+                    break;
+            }
+        }
+        */
+
+block content
+    .jumbotron
+        .container
+            h1 IP, DB and DNS
+            
+            p Specify IP, database paths and DNS configuration
+    
+    .container    
+        form(role='form' method='post' action='/ipconfig')
+
+            .panel.panel-primary
+                .panel-heading 
+                    h4.panel-title IP and DNS configuration
+                .panel-body
+                    p.
+                        Specify the DNS names under which the API Portal and Gateway shall be reached. The API portal
+                        assumes that you can reach the portal under a certain DNS name (e.g. <code>topic.yourcompany.com</code>, and
+                        the API Gateway is reachable under <code>api.(your domain)</code>, e.g. 
+                        <code>api.topic.yourcompany.com</code>.
+                        
+                    p.
+                        In case you are testing/developing locally, it is easier not to have the load balancer running locally.
+                        This is assumed below for the local development scenarios; in these cases, the schema is set to
+                        <code>http</code>. In the real deployment scenario (running in docker), the only allowed schema is
+                        <code>https</code>.
+
+                    +inputField('glob.network.schema', glob, 'Schema (https):', 'string')
+                    +inputField('glob.network.portalHost', glob, 'Portal Host:', 'string', 'This has to be the DNS entry of the host on which the portal UI is to be served from. Use <code>${LOCAL_PORTAL_HOST}</code> for local development to resolve automatically.')
+                    +inputField('glob.network.apiHost', glob, 'API Gateway Host:', 'string', 'This is the DNS name of the API gateway, or the IP when testing locally. For local development, use <code>${LOCAL_API_HOST}</code> to resolve automatically.')
+            
+            .panel.panel-danger
+                .panel-heading
+                    h4.panel-title Container and Configuration Wiring
+                .panel-body
+                    p.
+                        In most situations you will never ever change any of these values. For Docker deployments, the default values are perfectly fine, and in case you develop locally, you can still override the values from the command line.
+                    
+                    //.form-group
+                    //    label Predefined Environment Type:
+                    //    select(id='envType' onChange='populateContainerUrls();').form-control
+                    //        option(value='none') (none)
+                    //        option(value='docker') Docker: Docker Defaults (Production/Staging)
+                    //        option(value='nodeDevOSX') Linux/Mac OS X: Portal Development (node.js locally, Kong in Docker, Docker native or xhyve)
+                    //        option(value='nodeDevWin') Windows: Portal Development (node.js locally, Kong in Docker, VirtualBox Docker)
+                    //        option(value='fullStack') Linux/Mac OS X: Full Stack Development (Kong and node.js locally)
+
+                    //p.
+                    //    For actual Docker deployments, do not change these values! The portal API assumes a fixed path here,
+                    //    namely <code>/var/portal-api/static</code> and <code>/var/portal-api/dynamic</code>, respectively.
+                    
+                    +inputField('glob.db.staticConfig', glob, 'Static Configuration path:', 'string', 'The local path under which the static configuration (<code>/static</code>) can be found.', 'PORTAL_API_STATIC_CONFIG')
+                    +inputField('glob.db.dynamicConfig', glob, 'Dynamic Configuration path:', 'string', 'The local path for the dynamic configuration (users, applications, keys,...) can be found (<code>/dynamic</code>).', 'PORTAL_API_DYNAMIC_CONFIG')
+                    
+                    hr
+                    
+                    +inputField('glob.network.apiUrl', glob, 'Portal API URL:', 'string', 'The URL under which the internal API of the API Portal can be reached (behind the load balancer).', 'PORTAL_API_URL')
+                    +inputField('glob.network.portalUrl', glob, 'Portal URL:', 'string', 'The URL for the Portal UI, as seen from behind the load balancer (NOT the above Portal Host!). For local development, you may use <code>${LOCAL_PORTAL_URL}</code> to resolve the IP automatically.', 'PORTAL_PORTAL_URL')
+                    +inputField('glob.network.kongAdapterUrl', glob, 'Kong Adapter URL:', 'string', 'The URL under which the Kong Adapter can be reached (behind the load balancer).', 'PORTAL_KONG_ADAPTER_URL')
+                    +inputField('glob.network.kongAdminUrl', glob, 'Kong Management URL:', 'string', 'The Kong Admin URL (usually port 8001), as seen from behind the load balancer.', 'PORTAL_KONG_ADMIN_URL')
+                    +inputField('glob.network.mailerUrl', glob, 'Mailer URL:', 'string', 'The URL under which the Mailer component can be reached (behind the load balancer).', 'PORTAL_MAILER_URL')
+                    +inputField('glob.network.chatbotUrl', glob, 'Chatbot URL:', 'string', 'The URL under which the Chatbot component can be reached (behind the load balancer).', 'PORTAL_CHATBOT_URL')
+            
+            +renderButtons('/ipconfig', '/envs', '/ssl')

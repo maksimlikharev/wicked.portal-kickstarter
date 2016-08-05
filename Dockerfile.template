@@ -1,0 +1,6 @@
+FROM ${DOCKER_PREFIX}portal-env:${DOCKER_TAG}-onbuild
+
+ENTRYPOINT ["node", "bin/kickstart"]
+CMD ["/var/portal-api/static"]
+
+EXPOSE 3333

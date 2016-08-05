@@ -1,0 +1,86 @@
+extends layout
+
+mixin groupPanel(group, index)
+    - var grpName = group.id
+    - var grp = 'groups[' + index + ']'
+    .col-md-6
+        .panel.panel-primary
+            .panel-heading
+                table(width='100%')
+                    tr
+                        td
+                            h4 Group Definition - #{group.name}
+                        td(style='text-align:right')
+                            button(type='submit' onclick='setAction("deleteGroup", #{index});').btn.btn-danger Delete Group
+            .panel-body
+                .form-group
+                    label Group ID:
+                    input(name='#{grp}.id' id='#{grp}.id' value='#{group.id}' type='string').form-control
+                .form-group
+                    label Group Name:
+                    input(name='#{grp}.name' id='#{grp}.name' value='#{group.name}' type='string').form-control
+                .form-group
+                    label Alternative IDs:
+                    input(name='#{grp}.alt_ids' value='#{group.alt_ids}' type='string').form-control
+                    p.wicked-note Comma separated list of alternate IDs; if any of these are found in the ADFS groups, the user will be automatically assigned to this group. 
+                        
+                .checkbox
+                    label
+                        if group.adminGroup
+                            input(name='#{grp}.adminGroup' type='checkbox' checked='checked')
+                        else
+                            input(name='#{grp}.adminGroup' type='checkbox')
+                        | Admin Group
+
+block scripts
+    script(type='text/javascript').
+        function setAction(thisAction, index) {
+            $('#__action').val(thisAction);
+            if (index)
+                $('#__object').val(index);
+        }
+block content
+    .jumbotron
+        .container
+            h1 Groups configuration
+            
+            p Specify the user groups you need and want in your API portal. These can be used to restrict access to things like APIs or Content.
+    
+    .container
+        form(role='form' method='post' action='/groups')
+
+            p.
+                wicked lets you specify a user group which new users are automatically assigned to as soon as they
+                have validated their email addresses, or if they logged in via any of the federated authentication
+                means (ADFS, Google or Github). If you don't want the user to be auto assigned a group, specify
+                "&lt;none&gt;" here:
+            
+            br
+            .form-group
+                label Default Group for validated users:
+                select(name='validatedUserGroup').form-control
+                    option &lt;none&gt;
+                    each group, i in groups
+                        if validatedUserGroup == group.id
+                            option(selected)= group.id
+                        else
+                            option= group.id
+            br
+            
+            input(type='hidden' id='__action', name='__action' value='none')
+            input(type='hidden' id='__object', name='__object' value='none')
+
+            each group, i in groups
+                if (i % 2 == 0)
+                    .row
+                        +groupPanel(group, i)
+                        if (i+1) < groups.length
+                            +groupPanel(groups[i+1], i+1)
+
+            table(width='100%')
+                tr
+                    td(style='text-align:right')
+                        button(type='submit' onclick='setAction("addGroup");').btn.btn-success Add Group &raquo;
+            br
+            
+            +renderButtons('/groups', '/auth', '/plans')

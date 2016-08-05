@@ -1,0 +1,51 @@
+extends layout_plugin
+
+block content
+    .jumbotron
+        .container
+            h1 Kong Config - #{apiId}
+            
+            p Configure the API Gateway for this API. The most important setting is the backend URL.
+            
+    .container
+        form(role='form' action='/apis/#{apiId}' method='post')
+            .row
+                .col-md-2
+                    | &nbsp;
+                .col-md-8
+                    .panel.panel-primary
+                        .panel-heading
+                            h4.panel-title Basic Configuration
+                        .panel-body
+                            .form-group
+                                label Name:
+                                input(type='string' name='apis.#{safeApiId}.api.name' readonly value='#{apiId}').form-control
+                            +inputField('apis.' + safeApiId + '.api.upstream_url', apis, 'Upstream (backend) URL:')
+                            +inputField2('apis.' + safeApiId + '.api.request_path', apis, 'Request Path:', 'string', 'This is the prefix you will use for this API on the API Gateway, e.g. `/petstore/v1`.')
+                            +checkBox('apis.' + safeApiId + '.api.strip_request_path', apis, '<b>Strip Request Path</b>. Check this box if you don\'t want to pass the request path to the backend URL as well. Normally you wouldn\'t want that.')
+                            +checkBox('apis.' + safeApiId + '.api.preserve_host', apis, '<b>Preserve Host</b>. TODO: What does this actually do?')
+                .col-md-2
+                    | &nbsp;
+            .row
+                .col-md-2
+                    | &nbsp;
+                .col-md-8
+                    .panel.panel-danger
+                        .panel-heading
+                            h4.panel-title Plugin Configuration
+                        .panel-body
+                            p.
+                                This section is for configuring plugins for the <strong>entire API</strong>, e.g. over all Plans for the API. If you
+                                want to configure plugins depending on which plan/subscription the use has chosen, please head over
+                                to the configuration of the <a href='/plans'>Plans</a> instead.
+                        
+                            +loggingPanel('', plugins)
+                            +rateLimitingPanel('', plugins)
+                            +correlationIdPanel('', plugins, plugins.correlation_id.config.generator)
+                            +corsPanel('', plugins)
+                            +otherPluginsPanel('', plugins, 'PORTAL_APIS_' + apiId)
+                .col-md-2
+                    | &nbsp;
+                    
+            
+            +renderButtons('/apis/' + apiId, '/apis', null, '&laquo; Save &amp; Return')
