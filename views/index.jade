@@ -42,7 +42,7 @@ block content
     .row
       +section('envs', kickstarter, 'Environments Configuration', 'The API Portal configuration is designed to be parametrized for different environments, such as Dev, Test and Prod.', 'env')
       +section('ipconfig', kickstarter, 'IP and DNS Configuration', 'This is needed in order to enable the API portal to correctly route the calls from Swagger UI to the API Gateway and back.')
-      +section('ssl', kickstarter, 'SSL Configuration', 'Which certificate should be used for SSL termination? An API portal must be run with TLS. Only for local development, http can be acceptable.')
+      +section('deploy', kickstarter, 'Deployment Configuration', 'Defining how you want to deploy your configuration, creating docker compose files etc. SSL options.')
   hr
   .container
     .row

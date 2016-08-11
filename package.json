@@ -20,6 +20,7 @@
     "marked": "0.3.6",
     "mocha": "3.0.1",
     "morgan": "1.7.0",
+    "mustache": "2.2.1",
     "portal-env": "../portal-env.tgz",
     "serve-favicon": "2.3.0",
     "request": "2.74.0"

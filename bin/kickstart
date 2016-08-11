@@ -20,34 +20,35 @@ var yaml = require('js-yaml');
 
 if (process.argv.length < 3) {
     console.log("Usage:");
-    console.log("  node bin/kickstart [--new] [/path/to/static/config]");
+    console.log("  node bin/kickstart [--new] [/path/to/repo]");
     console.log("");
     console.log("  In case the kickstarter is running inside docker, the path to the");
-    console.log("  static configuration directory defaults to /var/portal-api/static.");
+    console.log("  static configuration directory defaults to /var/portal-api.");
     console.log("");
     console.log("Examples: Create a new configuration repository.");
     console.log("  Direct:");
     console.log("    node bin/kickstart --new /path/to/empty/dir");
     console.log("  Docker:");
-    console.log("    docker run -it --rm -v /path/to/empty/dir:/var/portal-api/static -p 3333:3333 <kickstarter-image> --new");
+    console.log("    docker run -it --rm -v /path/to/empty/dir:/var/portal-api -p 3333:3333 <kickstarter-image> --new");
     console.log("");
     console.log("Example: Edit an existing configuration repository.");
     console.log("  Direct:");
-    console.log("    node bin/kickstart /path/to/static");
+    console.log("    node bin/kickstart /path/to/repo");
     console.log("  Docker:");
-    console.log("    docker run -it --rm -v /path/to/static:/var/portal-api/static -p 3333:3333 <kickstarter-image>");
+    console.log("    docker run -it --rm -v /path/to/repo:/var/portal-api -p 3333:3333 <kickstarter-image>");
     process.exit(1);
 }
 
 // Docker special case
 if (process.argv.length == 3) {
     if (process.argv[2] == '--new') {
-        console.log("Assuming configuration path to be /var/portal-api/static.");
-        process.argv.push('/var/portal-api/static');
+        console.log("Assuming configuration path to be /var/portal-api.");
+        process.argv.push('/var/portal-api');
     }
 }
 
 var configPath;
+var basePath;
 
 if (process.argv.length == 4) {
     var parameter = process.argv[2];
@@ -56,14 +57,18 @@ if (process.argv.length == 4) {
         process.exit(1);
     }
     
-    configPath = process.argv[3];
+    basePath = process.argv[3];
 
-    if (fs.existsSync(path.join(configPath, 'globals.json'))) {
-        console.log("The given path '" + configPath + "' already contains a configuration repository. Will not create a new repository.");
+    if (fs.existsSync(path.join(basePath, 'static', 'globals.json'))) {
+        console.log("The given path '" + basePath + "' already contains a configuration repository. Will not create a new repository.");
         process.exit(1);
     }
 
     console.log('Creating a new configuration directory...');
+    configPath = path.join(basePath, 'static');
+    if (!fs.existsSync(configPath)) {
+        fs.mkdirSync(configPath);
+    }
 
     // Now copy the initial-config to the destination path.
     var initialConfigPath = envReader.getInitialConfigPath();
@@ -85,11 +90,12 @@ if (process.argv.length == 4) {
     fs.writeFileSync(defaultJsonFile, JSON.stringify(defaultJson, null, 2), 'utf8');
 
     console.log('Creating a .gitignore file...');
-    fs.writeFileSync(path.join(configPath, '.gitignore'), '*envkey\n', 'utf8');
+    fs.writeFileSync(path.join(basePath, '.gitignore'), '*envkey\n.DS_Store\n', 'utf8');
 
     console.log('Done.');
 } else {
-    configPath = process.argv[2];
+    basePath = process.argv[2];
+    configPath = path.join(basePath, 'static');
 }
 
 var globalConfigFile = path.join(configPath, 'globals.json');
@@ -134,6 +140,7 @@ configPath = path.resolve(configPath);
 //    process.exit(1);
 //}
 
+app.set('base_path', basePath);
 app.set('config_path', configPath);
 app.set('config_key', configKey);
 

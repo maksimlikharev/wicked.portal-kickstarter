@@ -1,0 +1,70 @@
+extends layout
+
+block content
+    .jumbotron
+        .container
+            h1 Deployment Configuration
+            
+            p Configure how you want to deploy your configuration; e.g. create a docker-compose.yml file.
+    
+    .container
+
+        form(role='form' method='post' action='/deploy')
+
+            if !hasDockerFiles
+
+                input(type="hidden" name="createDockerfiles" value="true")
+
+                .row
+                    .col-md-3
+                        | &nbsp;
+                    .col-md-6
+                        .panel.panel-default
+                            .panel-heading
+                                h4.panel-title Docker Image Settings
+                            .panel-body
+                                p.
+                                    Specify which docker images you want to use to run your API Portal. If in doubt, use the defaults (the official Haufe-Lexware ones),
+                                    or specify your own builds of the API Portal container images.
+                                
+                                .form-group
+                                    label HA Proxy Version: (<a href="https://hub.docker.com/r/dockercloud/haproxy/tags/" target="_blank">Tags</a>)
+                                    input(type="text" name="haProxyVersion" value="1.5.3").form-control
+
+                                .form-group
+                                    label PostgreSQL Version: (<a href="https://hub.docker.com/r/library/postgres/tags/" target="_blank">Tags</a>)
+                                    input(type="text" name="postgresVersion" value="9.4").form-control
+
+                                .form-group
+                                    label Docker Base Image prefix:
+                                    input(type="text" name="dockerPrefix" value="haufelexware/wicked.").form-control
+
+                                .form-group
+                                    label Docker Tag: (<a href="https://hub.docker.com/r/haufelexware/wicked.portal/tags/" target="_blank">Tags</a>)
+                                    input(type="text" name="dockerTag" value="latest").form-control
+
+                                .form-group
+                                    label API Host (env var is supported):
+                                    input(type="text" name="apiHost" value=apiHost).form-control
+
+                                .form-group
+                                    label Portal Host (env var is supported):
+                                    input(type="text" name="portalHost" value=portalHost).form-control
+            else
+
+                input(type="hidden" name="editDockerfiles" value="true")
+
+                // We have files to display
+                .panel.panel-default
+                    .panel-heading
+                        h4.panel-title <code>docker-compose.yml</code>
+                    .panel-body
+                        textarea(name='composeFile' style='height: 500px').form-control= dockerComposeFile
+                
+                .panel.panel-default
+                    .panel-heading
+                        h4.panel-title <code>static/Dockerfile</code>
+                    .panel-body
+                        textarea(name='dockerFile' style='height: 500px').form-control= dockerFile
+
+            +renderButtons('/deploy', '/ipconfig', '/users')

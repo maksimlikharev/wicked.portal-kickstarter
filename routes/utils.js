@@ -185,6 +185,10 @@ utils.mixoutEnv = function (source, envVars, prefix) {
         mixoutEnvInt(prefix, source, envVars["default"]);
 };
 
+function getBaseDir(app) {
+    return app.get('base_path');
+}
+
 function getConfigDir(app) {
     return app.get('config_path');
 }
@@ -717,7 +721,7 @@ utils.createNewContent = function (app, newContent, contentType, callback) {
 };
 
 utils.getInitialConfigDir = function () {
-    var appDir = path.join(__dirname, '..', '..', 'portal-env');
+    var appDir = path.join(__dirname, '..', 'node_modules', 'portal-env');
     return path.join(appDir, 'initial-config');
 };
 
@@ -771,6 +775,48 @@ utils.loadKickstarter = function (app) {
 utils.saveKickstarter = function (app, kickstarter) {
     var configDir = getConfigDir(app);
     fs.writeFileSync(path.join(configDir, 'kickstarter.json'), JSON.stringify(kickstarter, null, 2), 'utf8');
+};
+
+// === DEPLOY / DOCKER
+
+utils.readDockerComposeTemplate = function (app) {
+    var initialConfigDir = utils.getInitialConfigDir();
+    return fs.readFileSync(path.join(initialConfigDir, 'docker-compose.yml.template'), 'utf8');
+};
+
+utils.readDockerComposeFile = function (app) {
+    var baseDir = getBaseDir(app);
+    var composeFile = path.join(baseDir, 'docker-compose.yml');
+    if (fs.existsSync(composeFile)) {
+        return fs.readFileSync(composeFile, 'utf8');
+    }
+    return null;
+};
+
+utils.writeDockerComposeFile = function (app, composeFileContent) {
+    var baseDir = getBaseDir(app);
+    var composeFile = path.join(baseDir, 'docker-compose.yml');
+    fs.writeFileSync(composeFile, composeFileContent, 'utf8'); 
+};
+
+utils.readDockerfileTemplate = function (app) {
+    var initialConfigDir = utils.getInitialConfigDir();
+    return fs.readFileSync(path.join(initialConfigDir, 'Dockerfile.template'), 'utf8');
+};
+
+utils.readDockerfile = function (app) {
+    var configDir = getConfigDir(app);
+    var dockerFile = path.join(configDir, 'Dockerfile');
+    if (fs.existsSync(dockerFile)) {
+        return fs.readFileSync(dockerFile, 'utf8');
+    }
+    return null;
+};
+
+utils.writeDockerfile = function (app, dockerFileContent) {
+    var configDir = getConfigDir(app);
+    var dockerFile = path.join(configDir, 'Dockerfile');
+    fs.writeFileSync(dockerFile, dockerFileContent, 'utf8');
 };
 
 module.exports = utils;

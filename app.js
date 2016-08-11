@@ -17,7 +17,7 @@ var groups = require('./routes/groups');
 var ipconfig = require('./routes/ipconfig');
 var plans = require('./routes/plans');
 var recaptcha = require('./routes/recaptcha');
-var ssl = require('./routes/ssl');
+var deploy = require('./routes/deploy');
 var chatbot = require('./routes/chatbot');
 var swagger = require('./routes/swagger');
 var apidesc = require('./routes/apidesc');
@@ -51,7 +51,7 @@ app.use('/js/marked', express.static(path.join(__dirname, 'node_modules/marked')
 
 app.use('/', routes);
 app.use('/ipconfig', ipconfig);
-app.use('/ssl', ssl);
+app.use('/deploy', deploy);
 app.use('/users', users);
 app.use('/auth', auth);
 app.use('/groups', groups);
