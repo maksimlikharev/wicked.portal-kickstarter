@@ -58,6 +58,9 @@ block content
                                 .form-group
                                     label Portal Host (env var is supported):
                                     input(type="text" name="portalHost" value=portalHost).form-control
+
+                                input(type="hidden" name="apiHostVarName" value=apiHostVarName)
+                                input(type="hidden" name="portalHostVarName" value=portalHostVarName)
             else
 
                 input(type="hidden" name="editDockerfiles" value="true")

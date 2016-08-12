@@ -199,6 +199,10 @@ function getConfigKey(app) {
     return app.get('config_key');
 }
 
+function getResDir() {
+    return path.join(__dirname, 'res');
+}
+
 function getGlobalsFileName(app) {
     var configDir = getConfigDir(app);
     var globalsFileName = path.join(configDir, 'globals.json');
@@ -786,8 +790,7 @@ utils.saveKickstarter = function (app, kickstarter) {
 // === DEPLOY / DOCKER
 
 utils.readDockerComposeTemplate = function (app) {
-    var initialConfigDir = utils.getInitialConfigDir();
-    return fs.readFileSync(path.join(initialConfigDir, 'docker-compose.yml.template'), 'utf8');
+    return fs.readFileSync(path.join(getResDir(), 'docker-compose.yml.template'), 'utf8');
 };
 
 utils.readDockerComposeFile = function (app) {
@@ -806,8 +809,7 @@ utils.writeDockerComposeFile = function (app, composeFileContent) {
 };
 
 utils.readDockerfileTemplate = function (app) {
-    var initialConfigDir = utils.getInitialConfigDir();
-    return fs.readFileSync(path.join(initialConfigDir, 'Dockerfile.template'), 'utf8');
+    return fs.readFileSync(path.join(getResDir(), 'Dockerfile.template'), 'utf8');
 };
 
 utils.readDockerfile = function (app) {
@@ -823,6 +825,16 @@ utils.writeDockerfile = function (app, dockerFileContent) {
     var configDir = getConfigDir(app);
     var dockerFile = path.join(configDir, 'Dockerfile');
     fs.writeFileSync(dockerFile, dockerFileContent, 'utf8');
+};
+
+utils.readDockerVariablesTemplate = function (app) {
+    return fs.readFileSync(path.join(getResDir(), 'variables.env.template'), 'utf8');
+};
+
+utils.writeVariablesFile = function (app, variablesContent) {
+    var baseDir = getBaseDir(app);
+    var variablesFile = path.join(baseDir, 'variables.env');
+    fs.writeFileSync(variablesFile, variablesContent, 'utf8');
 };
 
 // ==== SSL / CERTIFICATES
@@ -860,10 +872,10 @@ utils.createCert = function (app, glob, envDict, certsDir, envName, validDays) {
         fs.mkdirSync(envDir);
     let portalHost = resolveHostByEnv(envDict, envName, glob.network.portalHost.trim());
     let apiHost = resolveHostByEnv(envDict, envName, glob.network.apiHost.trim());
-    let portalHostVarName = resolveEnvVarName(glob.network.portalHost.trim(), 'PORTAL_NETWORK_PORTALHOST');
-    let apiHostVarName = resolveEnvVarName(glob.network.apiHost.trim(), 'PORTAL_NETWORK_APIHOST');
+    let portalHostVarName = utils.resolveEnvVarName(glob.network.portalHost.trim(), 'PORTAL_NETWORK_PORTALHOST');
+    let apiHostVarName = utils.resolveEnvVarName(glob.network.apiHost.trim(), 'PORTAL_NETWORK_APIHOST');
 
-    let shTemplate = fs.readFileSync(path.join(__dirname, 'res', 'env.sh.template'), 'utf8');
+    let shTemplate = fs.readFileSync(path.join(getResDir(), 'env.sh.template'), 'utf8');
     let shContent = mustache.render(shTemplate, {
         envName: envName,
         portalHostVarName: portalHostVarName,
@@ -899,7 +911,7 @@ utils.createCert = function (app, glob, envDict, certsDir, envName, validDays) {
     execSync(openSslApi, execOptions);
 };
 
-function resolveEnvVarName(hostName, defaultName) {
+utils.resolveEnvVarName = function (hostName, defaultName) {
     let envVarName;
     if (hostName.startsWith('${'))
         envVarName = hostName.substring(2, hostName.length - 1);
@@ -913,7 +925,7 @@ function resolveEnvVarName(hostName, defaultName) {
 function resolveHostByEnv(envDict, envName, hostName) {
     if (!hostName.startsWith('$'))
         return hostName; // No env var here.
-    let envVarName = resolveEnvVarName(hostName);
+    let envVarName = utils.resolveEnvVarName(hostName);
     if (!envDict[envName])
         throw 'Unknown environment name: ' + envName;
     if (!envDict[envName][envVarName])

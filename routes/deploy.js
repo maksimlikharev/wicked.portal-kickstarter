@@ -29,6 +29,8 @@ router.get('/', function (req, res, next) {
 
     let apiHost = fwibbleHost(glob.network.apiHost);
     let portalHost = fwibbleHost(glob.network.portalHost);
+    let portalHostVarName = utils.resolveEnvVarName(glob.network.portalHost.trim(), 'PORTAL_NETWORK_PORTALHOST');
+    let apiHostVarName = utils.resolveEnvVarName(glob.network.apiHost.trim(), 'PORTAL_NETWORK_APIHOST');
 
     res.render('deploy', {
         configPath: req.app.get('config_path'),
@@ -36,7 +38,9 @@ router.get('/', function (req, res, next) {
         dockerComposeFile: dockerComposeFile,
         dockerFile: dockerFile,
         apiHost: apiHost,
-        portalHost: portalHost
+        apiHostVarName: apiHostVarName,
+        portalHost: portalHost,
+        portalHostVarName: portalHostVarName
     });
 });
 
@@ -51,12 +55,15 @@ router.post('/', function (req, res, next) {
         // Create new Dockerfiles
         var composeTemplate = utils.readDockerComposeTemplate(req.app);
         var dockerfileTemplate = utils.readDockerfileTemplate(req.app);
+        var variablesTemplate = utils.readDockerVariablesTemplate(req.app);
 
         var composeContent = mustache.render(composeTemplate, body);
         var dockerfileContent = mustache.render(dockerfileTemplate, body);
+        var variablesContent = mustache.render(variablesTemplate, body);
 
         utils.writeDockerComposeFile(req.app, composeContent);
         utils.writeDockerfile(req.app, dockerfileContent);
+        utils.writeVariablesFile(req.app, variablesContent);
 
     } else if (body.editDockerfiles) {
         // Edit the Dockerfiles
