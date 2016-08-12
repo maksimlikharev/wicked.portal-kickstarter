@@ -860,10 +860,15 @@ utils.createCert = function (app, glob, envDict, certsDir, envName, validDays) {
         fs.mkdirSync(envDir);
     let portalHost = resolveHostByEnv(envDict, envName, glob.network.portalHost.trim());
     let apiHost = resolveHostByEnv(envDict, envName, glob.network.apiHost.trim());
+    let portalHostVarName = resolveEnvVarName(glob.network.portalHost.trim(), 'PORTAL_NETWORK_PORTALHOST');
+    let apiHostVarName = resolveEnvVarName(glob.network.apiHost.trim(), 'PORTAL_NETWORK_APIHOST');
+
     let shTemplate = fs.readFileSync(path.join(__dirname, 'res', 'env.sh.template'), 'utf8');
     let shContent = mustache.render(shTemplate, {
         envName: envName,
+        portalHostVarName: portalHostVarName,
         portalHost: portalHost,
+        apiHostVarName: apiHostVarName,
         apiHost: apiHost,
         portalConfigKey: getConfigKey(app)
     });
@@ -894,14 +899,21 @@ utils.createCert = function (app, glob, envDict, certsDir, envName, validDays) {
     execSync(openSslApi, execOptions);
 };
 
-function resolveHostByEnv(envDict, envName, hostName) {
-    if (!hostName.startsWith('$'))
-        return hostName; // No env var here.
+function resolveEnvVarName(hostName, defaultName) {
     let envVarName;
     if (hostName.startsWith('${'))
         envVarName = hostName.substring(2, hostName.length - 1);
     else if (hostName.startsWith('$'))
         envVarName = hostName.substring(1);
+    else
+        return defaultName;
+    return envVarName;
+}
+
+function resolveHostByEnv(envDict, envName, hostName) {
+    if (!hostName.startsWith('$'))
+        return hostName; // No env var here.
+    let envVarName = resolveEnvVarName(hostName);
     if (!envDict[envName])
         throw 'Unknown environment name: ' + envName;
     if (!envDict[envName][envVarName])
