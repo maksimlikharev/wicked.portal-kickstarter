@@ -3,6 +3,8 @@
 var fs = require('fs');
 var path = require('path');
 var crypto = require('crypto');
+var mustache = require('mustache');
+var execSync = require('child_process').execSync;
 var envReader = require('portal-env');
 
 var utils = function () { };
@@ -193,6 +195,10 @@ function getConfigDir(app) {
     return app.get('config_path');
 }
 
+function getConfigKey(app) {
+    return app.get('config_key');
+}
+
 function getGlobalsFileName(app) {
     var configDir = getConfigDir(app);
     var globalsFileName = path.join(configDir, 'globals.json');
@@ -347,7 +353,7 @@ function decryptEnvDict(app, envDict) {
         for (var propName in env) {
             var prop = env[propName];
             if (prop.encrypted)
-                prop.value = envReader.Crypt.apiDecrypt(app.get('config_key'), prop.value);
+                prop.value = envReader.Crypt.apiDecrypt(getConfigKey(app), prop.value);
         }
     }
 }
@@ -373,7 +379,7 @@ function encryptEnv(app, env) {
     for (var propName in env) {
         var prop = env[propName];
         if (prop.encrypted)
-            prop.value = envReader.Crypt.apiEncrypt(app.get('config_key'), prop.value);
+            prop.value = envReader.Crypt.apiEncrypt(getConfigKey(app), prop.value);
     }
 }
 
@@ -818,5 +824,89 @@ utils.writeDockerfile = function (app, dockerFileContent) {
     var dockerFile = path.join(configDir, 'Dockerfile');
     fs.writeFileSync(dockerFile, dockerFileContent, 'utf8');
 };
+
+// ==== SSL / CERTIFICATES
+
+function getCertsDir(app) {
+    const baseDir = getBaseDir(app);
+    const certsDir = path.join(baseDir, 'certs');
+    return certsDir;
+}
+
+utils.hasCertsFolder = function (app) {
+    return fs.existsSync(getCertsDir(app));
+};
+
+utils.createCerts = function (app, validDays) {
+    const certsDir = getCertsDir(app);
+    if (!fs.existsSync(certsDir)) {
+        fs.mkdirSync(certsDir);
+    }
+    const glob = utils.loadGlobals(app);
+    const kick = utils.loadKickstarter(app);
+
+    if (!kick.envs)
+        throw 'kickstarter.json does not have an envs property.';
+    let envDict = utils.loadEnvDict(app);
+    for (let env in kick.envs) {
+        let envName = kick.envs[env];
+        utils.createCert(app, glob, envDict, certsDir, envName, validDays);
+    }
+};
+
+utils.createCert = function (app, glob, envDict, certsDir, envName, validDays) {
+    const envDir = path.join(certsDir, envName);
+    if (!fs.existsSync(envDir))
+        fs.mkdirSync(envDir);
+    let portalHost = resolveHostByEnv(envDict, envName, glob.network.portalHost.trim());
+    let apiHost = resolveHostByEnv(envDict, envName, glob.network.apiHost.trim());
+    let shTemplate = fs.readFileSync(path.join(__dirname, 'res', 'env.sh.template'), 'utf8');
+    let shContent = mustache.render(shTemplate, {
+        envName: envName,
+        portalHost: portalHost,
+        apiHost: apiHost,
+        portalConfigKey: getConfigKey(app)
+    });
+    let shFileName = path.join(certsDir, envName + '.sh');
+    fs.writeFileSync(shFileName, shContent, 'utf8');
+    fs.chmodSync(shFileName, '755');
+
+    let openSslPortal = 'openssl req -x509 -nodes -days ' + validDays + 
+        ' -newkey rsa:2048 -keyout ' + envName + '/portal-key.pem' +
+        ' -out ' + envName + '/portal-cert.pem' +
+        ' -subj "/CN=' + portalHost + '"';
+    let openSslApi = 'openssl req -x509 -nodes -days ' + validDays + 
+        ' -newkey rsa:2048 -keyout ' + envName + '/gateway-key.pem' +
+        ' -out ' + envName + '/gateway-cert.pem' +
+        ' -subj "/CN=' + portalHost + '"';
+
+    let portalLogFile = path.join(certsDir, envName, 'portal-openssl.txt');
+    let apiLogFile = path.join(certsDir, envName, 'gateway-openssl.txt');
+
+    fs.writeFileSync(portalLogFile, openSslPortal, 'utf8');
+    fs.writeFileSync(apiLogFile, openSslApi, 'utf8'); 
+
+    let execOptions = {
+        cwd: certsDir
+    };
+
+    execSync(openSslPortal, execOptions);
+    execSync(openSslApi, execOptions);
+};
+
+function resolveHostByEnv(envDict, envName, hostName) {
+    if (!hostName.startsWith('$'))
+        return hostName; // No env var here.
+    let envVarName;
+    if (hostName.startsWith('${'))
+        envVarName = hostName.substring(2, hostName.length - 1);
+    else if (hostName.startsWith('$'))
+        envVarName = hostName.substring(1);
+    if (!envDict[envName])
+        throw 'Unknown environment name: ' + envName;
+    if (!envDict[envName][envVarName])
+        throw 'Unknown env var used for host: ' + envVarName;
+    return envDict[envName][envVarName].value;
+}
 
 module.exports = utils;

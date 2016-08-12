@@ -9,6 +9,14 @@ block content
     
     .container
 
+        .panel.panel-default
+            .panel-heading
+                h4.panel-title SSL helpers
+            .panel-body
+                p.
+                    The page <code>ssl</code> can help you get some self signed certificates; this is not usable for production!
+                a(href='ssl').btn.btn-primary SSL Tools &raquo;
+
         form(role='form' method='post' action='/deploy')
 
             if !hasDockerFiles

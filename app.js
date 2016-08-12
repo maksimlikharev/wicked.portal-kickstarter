@@ -25,6 +25,7 @@ var users = require('./routes/users');
 var editcontent = require('./routes/editcontent');
 var templates = require('./routes/templates');
 var envs = require('./routes/envs');
+var ssl = require('./routes/ssl');
 var shutdown = require('./routes/shutdown');
 
 // API functions
@@ -52,6 +53,7 @@ app.use('/js/marked', express.static(path.join(__dirname, 'node_modules/marked')
 app.use('/', routes);
 app.use('/ipconfig', ipconfig);
 app.use('/deploy', deploy);
+app.use('/ssl', ssl);
 app.use('/users', users);
 app.use('/auth', auth);
 app.use('/groups', groups);

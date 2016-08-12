@@ -30,15 +30,14 @@ router.get('/', function (req, res, next) {
     let apiHost = fwibbleHost(glob.network.apiHost);
     let portalHost = fwibbleHost(glob.network.portalHost);
 
-    res.render('deploy',
-        {
-            configPath: req.app.get('config_path'),
-            hasDockerFiles: hasDockerFiles,
-            dockerComposeFile: dockerComposeFile,
-            dockerFile: dockerFile,
-            apiHost: apiHost,
-            portalHost: portalHost
-        });
+    res.render('deploy', {
+        configPath: req.app.get('config_path'),
+        hasDockerFiles: hasDockerFiles,
+        dockerComposeFile: dockerComposeFile,
+        dockerFile: dockerFile,
+        apiHost: apiHost,
+        portalHost: portalHost
+    });
 });
 
 router.post('/', function (req, res, next) {
