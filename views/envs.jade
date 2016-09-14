@@ -53,7 +53,7 @@ block content
         .panel-body
           form(role='form' action='/envs' method='post')
             p.
-              Specify a name for the environment. It can contain lower case letters <code>a-z</code>, digits and hyphens <code>-</code>. The new environment will not contain any overridden variables.
+              Specify a name for the environment. It can contain lower case letters <code>a-z</code>, digits and hyphens <code>-</code>. The new environment will not contain any overridden variables. To create an environment for local node.js development, use the name <code>localhost</code>, and Kickstarter will specify some special values for you to help you with that.
             
             input(name='new_env' id='new_env' type='string').form-control
           

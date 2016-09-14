@@ -120,7 +120,7 @@ block content
                     hr
                     
                     +inputField('glob.network.apiUrl', glob, 'Portal API URL:', 'string', 'The URL under which the internal API of the API Portal can be reached (behind the load balancer).', 'PORTAL_API_URL')
-                    +inputField('glob.network.portalUrl', glob, 'Portal URL:', 'string', 'The URL for the Portal UI, as seen from behind the load balancer (NOT the above Portal Host!). For local development, you may use <code>${LOCAL_PORTAL_URL}</code> to resolve the IP automatically.', 'PORTAL_PORTAL_URL')
+                    +inputField('glob.network.portalUrl', glob, 'Portal URL:', 'string', 'The URL for the Portal UI, as seen from behind the load balancer (NOT the above Portal Host!).', 'PORTAL_PORTAL_URL')
                     +inputField('glob.network.kongAdapterUrl', glob, 'Kong Adapter URL:', 'string', 'The URL under which the Kong Adapter can be reached (behind the load balancer).', 'PORTAL_KONG_ADAPTER_URL')
                     +inputField('glob.network.kongAdminUrl', glob, 'Kong Management URL:', 'string', 'The Kong Admin URL (usually port 8001), as seen from behind the load balancer.', 'PORTAL_KONG_ADMIN_URL')
                     +inputField('glob.network.mailerUrl', glob, 'Mailer URL:', 'string', 'The URL under which the Mailer component can be reached (behind the load balancer).', 'PORTAL_MAILER_URL')

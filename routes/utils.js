@@ -272,6 +272,14 @@ utils.jsonClone = function (ob) {
     return JSON.parse(JSON.stringify(ob));
 };
 
+var BUILTIN_ENVVARS = {
+    'LOCAL_IP': true,
+    'LOCAL_API_HOST': true,
+    'LOCAL_PORTAL_HOST': true,
+    'LOCAL_PORTAL_URL': true,
+    'LOCAL_API_URL': true
+};
+
 utils.loadEnvDict = function (app, usedEnvVars) {
     let kickstarter = utils.loadKickstarter(app);
     const envDict = {};
@@ -293,6 +301,8 @@ utils.loadEnvDict = function (app, usedEnvVars) {
         // Check if we have used env vars which are not yet in the
         // default environment dictionary.
         for (let propName in usedEnvVars) {
+            if (BUILTIN_ENVVARS.hasOwnProperty(propName))
+                continue;
             if (!defaultEnv.hasOwnProperty(propName)) {
                 console.log('Picked up new env var ' + propName);
                 defaultEnv[propName] = {
@@ -394,8 +404,23 @@ utils.deleteEnv = function (app, envId) {
 };
 
 utils.createEnv = function (app, newEnvId) {
-    var envFileName = path.join(getConfigDir(app), 'env', newEnvId + '.json');
-    fs.writeFileSync(envFileName, JSON.stringify({}, null, 2), 'utf8');
+    let envFileName = path.join(getConfigDir(app), 'env', newEnvId + '.json');
+    let envDict = {};
+    if (newEnvId === "localhost") {
+        envDict = {
+            PORTAL_CONFIG_BASE: { value: '/override/this/' },
+            PORTAL_API_URL: { value: 'http://${LOCAL_IP}:3001' },
+            PORTAL_CHATBOT_URL: { value: 'http://${LOCAL_IP}:3004' },
+            PORTAL_KONG_ADAPTER_URL: { value: 'http://${LOCAL_IP}:3002' },
+            PORTAL_KONG_ADMIN_URL: { value: 'http://${LOCAL_IP}:8001' },
+            PORTAL_MAILER_URL: { value: 'http://${LOCAL_IP}:3003' },
+            PORTAL_NETWORK_APIHOST: { value: '${LOCAL_IP}:8000' },
+            PORTAL_NETWORK_PORTALHOST: { value: '${LOCAL_IP}:3000' },
+            PORTAL_NETWORK_SCHEMA: { value: 'http' },
+            PORTAL_PORTAL_URL: { value: 'http://${LOCAL_IP}:3000' }
+        };
+    }
+    fs.writeFileSync(envFileName, JSON.stringify(envDict, null, 2), 'utf8');
 };
 
 /*
@@ -920,7 +945,7 @@ utils.resolveEnvVarName = function (hostName, defaultName) {
     else
         return defaultName;
     return envVarName;
-}
+};
 
 function resolveHostByEnv(envDict, envName, hostName) {
     if (!hostName.startsWith('$'))
