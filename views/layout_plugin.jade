@@ -56,8 +56,7 @@ mixin rateLimitingPanel(prefix, data)
         +inputField2(prefix + 'plugins.rate_limiting.config.year', data, "Requests per year:")
         hr
         h4 Additional Settings
-        +checkBox(prefix + 'plugins.rate_limiting.config.async', data, '<strong>Async</strong>: Set to <code>true</code> to speed up at cost of accuracy.')
-        +checkBox(prefix + 'plugins.rate_limiting.config.continue_on_error', data, '<strong>Continue on error</strong>: Proxy requests even if Kong cannot reach its DB.')
+        +checkBox(prefix + 'plugins.rate_limiting.config.fault_tolerant', data, '<strong>Fault tolerant:</strong>: Proxy requests even if Kong cannot reach its DB.')
 
 mixin corsPanel(prefix, data)
     +pluginPanel(prefix + 'plugins.cors.useCors', data, "CORS")

@@ -47,8 +47,7 @@ pluginUtils.makeViewModel = function (configPlugins) {
             name: "rate-limiting",
             config: {
                 hour: 100,
-                async: true,
-                continue_on_error: true
+                fault_tolerant: true
             }
         };
     }
