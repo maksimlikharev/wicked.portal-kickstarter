@@ -89,8 +89,11 @@ if (process.argv.length == 4) {
     };
     fs.writeFileSync(defaultJsonFile, JSON.stringify(defaultJson, null, 2), 'utf8');
 
+    const fileFilter = '*envkey\n.DS_Store\ncerts\ndynamic\n';
     console.log('Creating a .gitignore file...');
-    fs.writeFileSync(path.join(basePath, '.gitignore'), '*envkey\n.DS_Store\ncerts\ndynamic\n', 'utf8');
+    fs.writeFileSync(path.join(basePath, '.gitignore'), fileFilter, 'utf8');
+    console.log('Creating a .dockerignore file...');
+    fs.writeFileSync(path.join(configPath, '.dockerignore'), fileFilter, 'utf8');
 
     console.log('Done.');
 } else {
