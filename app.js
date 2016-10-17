@@ -27,6 +27,7 @@ var templates = require('./routes/templates');
 var envs = require('./routes/envs');
 var ssl = require('./routes/ssl');
 var shutdown = require('./routes/shutdown');
+var authservers = require('./routes/authservers');
 
 // API functions
 var api = require('./routes/api');
@@ -59,6 +60,7 @@ app.use('/auth', auth);
 app.use('/groups', groups);
 app.use('/plans', plans);
 app.use('/apis', apis);
+app.use('/authservers', authservers);
 app.use('/recaptcha', recaptcha);
 app.use('/content', content);
 app.use('/email', email);

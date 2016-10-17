@@ -484,10 +484,52 @@ function getApisFileName(app) {
 }
 
 utils.loadApis = function (app) {
-    return JSON.parse(fs.readFileSync(getApisFileName(app), 'utf8'));
+    const apis = JSON.parse(fs.readFileSync(getApisFileName(app), 'utf8'));
+    const authServers = utils.getAuthServers(app);
+    for (let i = 0; i < apis.apis.length; ++i) {
+        const thisApi = apis.apis[i];
+        if (thisApi.settings && thisApi.settings.scopes && Array.isArray(thisApi.settings.scopes)) {
+            thisApi.settings.scopes = thisApi.settings.scopes.join(' ');
+        } else if (thisApi.settings) {
+            thisApi.settings.scopes = '';
+        }
+        // Fubble some defaults.
+        if (!thisApi.settings) {
+            thisApi.settings = {
+                token_expiration: 3600,
+                scopes: '',
+                mandatory_scope: false
+            };
+        }
+        if (!thisApi.authServer && authServers.length > 0) {
+            thisApi.authServer = authServers[0];
+        }
+    }
+    return apis;
 };
 
 utils.saveApis = function (app, apis) {
+    for (let i = 0; i < apis.apis.length; ++i) {
+        const thisApi = apis.apis[i];
+        if (thisApi.auth == 'oauth2-implicit') {
+            if (thisApi.settings && thisApi.settings.scopes && utils.isString(thisApi.settings.scopes)) {
+                const scopesString = thisApi.settings.scopes.trim();
+                if (scopesString && scopesString !== '')
+                    thisApi.settings.scopes = scopesString.split(' ');
+                else
+                    thisApi.settings.scopes = [];
+            }
+        } else if (thisApi.auth == 'oauth2') {
+            if (thisApi.hasOwnProperty('authServer'))
+                delete thisApi.authServer;            
+        } else if (thisApi.auth == 'key-auth') {
+            if (thisApi.hasOwnProperty('settings'))
+                delete thisApi.settings;
+            if (thisApi.hasOwnProperty('authServer'))
+                delete thisApi.authServer;
+        }
+
+    }
     fs.writeFileSync(getApisFileName(app), JSON.stringify(apis, null, 2), 'utf8');
 };
 
@@ -628,7 +670,7 @@ utils.isPublic = function (uriName) {
 
 utils.isContent = function (uriName) {
     return uriName.endsWith('.md') ||
-           uriName.endsWith('.jade');
+        uriName.endsWith('.jade');
 };
 
 utils.getContentType = function (uriName) {
@@ -830,7 +872,7 @@ utils.readDockerComposeFile = function (app) {
 utils.writeDockerComposeFile = function (app, composeFileContent) {
     var baseDir = getBaseDir(app);
     var composeFile = path.join(baseDir, 'docker-compose.yml');
-    fs.writeFileSync(composeFile, composeFileContent, 'utf8'); 
+    fs.writeFileSync(composeFile, composeFileContent, 'utf8');
 };
 
 utils.readDockerfileTemplate = function (app) {
@@ -913,11 +955,11 @@ utils.createCert = function (app, glob, envDict, certsDir, envName, validDays) {
     fs.writeFileSync(shFileName, shContent, 'utf8');
     fs.chmodSync(shFileName, '755');
 
-    let openSslPortal = 'openssl req -x509 -nodes -days ' + validDays + 
+    let openSslPortal = 'openssl req -x509 -nodes -days ' + validDays +
         ' -newkey rsa:2048 -keyout ' + envName + '/portal-key.pem' +
         ' -out ' + envName + '/portal-cert.pem' +
         ' -subj "/CN=' + portalHost + '"';
-    let openSslApi = 'openssl req -x509 -nodes -days ' + validDays + 
+    let openSslApi = 'openssl req -x509 -nodes -days ' + validDays +
         ' -newkey rsa:2048 -keyout ' + envName + '/gateway-key.pem' +
         ' -out ' + envName + '/gateway-cert.pem' +
         ' -subj "/CN=' + portalHost + '"';
@@ -926,7 +968,7 @@ utils.createCert = function (app, glob, envDict, certsDir, envName, validDays) {
     let apiLogFile = path.join(certsDir, envName, 'gateway-openssl.txt');
 
     fs.writeFileSync(portalLogFile, openSslPortal, 'utf8');
-    fs.writeFileSync(apiLogFile, openSslApi, 'utf8'); 
+    fs.writeFileSync(apiLogFile, openSslApi, 'utf8');
 
     let execOptions = {
         cwd: certsDir
@@ -957,5 +999,87 @@ function resolveHostByEnv(envDict, envName, hostName) {
         throw 'Unknown env var used for host: ' + envVarName;
     return envDict[envName][envVarName].value;
 }
+
+function getAuthServerDir(app) {
+    const configDir = getConfigDir(app);
+    const authServerDir = path.join(configDir, 'auth-servers');
+    if (!fs.existsSync(authServerDir))
+        fs.mkdirSync(authServerDir);
+    return authServerDir;
+}
+
+function isValidServerName(serverName) {
+    return /^[a-z\-\_0-9]+$/.test(serverName);
+}
+
+utils.getAuthServers = function (app) {
+    const authServerDir = getAuthServerDir(app);
+    const fileNames = fs.readdirSync(authServerDir);
+    const authServerNames = [];
+    for (let i = 0; i < fileNames.length; ++i) {
+        const fileName = fileNames[i];
+        if (fileName.endsWith('.json')) {
+            const strippedName = fileName.substring(0, fileName.length - 5);
+            if (isValidServerName(strippedName))
+                authServerNames.push(strippedName); // strip .json
+        }
+    }
+    return authServerNames;
+};
+
+utils.loadAuthServer = function (app, serverName) {
+    if (!isValidServerName(serverName))
+        throw new Error('Server name ' + serverName + ' is not a valid auth server name (a-z, 0-9, -, _).');
+    const authServerDir = getAuthServerDir(app);
+    const fileName = path.join(authServerDir, serverName + '.json');
+    if (!fs.existsSync(fileName))
+        throw new Error('File not found: ' + fileName);
+    return JSON.parse(fs.readFileSync(fileName, 'utf8'));
+};
+
+utils.saveAuthServer = function (app, serverName, serverInfo) {
+    const authServerDir = getAuthServerDir(app);
+    const fileName = path.join(authServerDir, serverName + '.json');
+    fs.writeFileSync(fileName, JSON.stringify(serverInfo, null, 2), 'utf8');
+};
+
+utils.createAuthServer = function (app, serverName) {
+    if (!isValidServerName(serverName))
+        throw new Error('Server names must only contain a-z (lowercase), 0-9, - and _.');
+    const authServerDir = getAuthServerDir(app);
+    const fileName = path.join(authServerDir, serverName + '.json');
+    if (fs.existsSync(fileName))
+        throw new Error('File ' + fileName + ' already exists.');
+    const serverInfo = {
+        id: serverName,
+        name: serverName,
+        desc: 'Description of Authorization Server ' + serverName,
+        url: "https://${PORTAL_NETWORK_APIHOST}/auth-server/{{apiId}}?client_id=(your app's client id)",
+        config: {
+            api: {
+                name: serverName,
+                upstream_url: 'http://auth-server:3005',
+                request_path: '/auth-server',
+                preserve_host: false,
+                strip_request_path: false,
+            },
+            plugins: [
+                {
+                    name: 'correlation-id',
+                    config: {
+                        header_name: 'Correlation-Id',
+                        generator: 'uuid',
+                        echo_downstream: false
+                    }
+                }
+            ]
+        },
+    };
+    utils.saveAuthServer(app, serverName, serverInfo);
+};
+
+utils.makeSafeId = function (unsafeId) {
+    return unsafeId.replace(/\-/g, '');
+};
 
 module.exports = utils;

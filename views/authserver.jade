@@ -1,0 +1,45 @@
+extends layout_plugin
+
+block content
+    .jumbotron
+        .container
+            h1= authServer[safeServerId].name
+            
+            p Authorization Server Settings
+    
+    .container
+        br
+        p An Authorization Server is just a special case of an API (without Authentication). This means you can also use any kind of plugin which makes sense to your configuration, just like  you could for an API. The <code>upstream_url</code> will depend on your implementation of an Authorization Server, and must reflect the deployment environment/your <code>docker-compose.yml</code> file (or whatever you are using to deploy your docker containers). 
+
+        form(role='form' method='post' action='/authservers/#{serverId}')
+            .panel.panel-primary
+                .panel-heading
+                    h4.panel-title Basic Configuration
+                .panel-body
+                    .form-group
+                        label Name:
+                        input(type='string' name='authServer.' + safeServerId + '.name' readonly value=authServer[safeServerId].name).form-control
+                    +inputField('authServer.' + safeServerId + '.url', authServer, 'Authorization Server URL:', 'string', 'The outside URL (via the API Gateway) of the authorization server. Use Mustache to template <code>apiId</code> in.')
+                    +inputField('authServer.' + safeServerId + '.desc', authServer, 'Description:', 'string', 'Friendly description of the Authorization Server. Displayed on the API description page for APIs using this Server.')
+                    +inputField('authServer.' + safeServerId + '.config.api.upstream_url', authServer, 'Upstream (backend) URL:')
+                    +inputField2('authServer.' + safeServerId + '.config.api.request_path', authServer, 'Request Path:', 'string', 'This is the prefix you will use for this API on the API Gateway, e.g. `/petstore/v1`.')
+                    +checkBox('authServer.' + safeServerId + '.config.api.strip_request_path', authServer, '<b>Strip Request Path</b>. Check this box if you don\'t want to pass the request path to the backend URL as well. Normally you wouldn\'t want that.')
+                    +checkBox('authServer.' + safeServerId + '.config.api.preserve_host', authServer, '<b>Preserve Host</b>. Preserves the original <code>Host</code> header sent by the client, instead of replacing it with the hostname of the <code>upstream_url</code>.')
+
+            .panel.panel-danger
+                .panel-heading
+                    h4.panel-title Plugin Configuration
+                .panel-body
+                    p.
+                        This section is for configuring plugins for the Authorization Server. The Authorization Server
+                        is registered as an API with the API Gateway, and thus you may use the usual plugins for it.
+                
+                    +loggingPanel('', plugins)
+                    +rateLimitingPanel('', plugins)
+                    +correlationIdPanel('', plugins, plugins.correlation_id.config.generator)
+                    //+corsPanel('', plugins)
+                    +otherPluginsPanel('', plugins, 'PORTAL_AUTHSERVERS_' + safeServerId)
+            
+            br
+            +renderButtons('/authservers/' + serverId, '/authservers', null, '&laquo; Save &amp; Return')
+            

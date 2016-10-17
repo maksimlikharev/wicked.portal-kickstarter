@@ -8,8 +8,10 @@ var pluginUtils = require('./pluginUtils');
 
 router.get('/', function (req, res, next) {
     var apis = utils.loadApis(req.app);
+    console.log(JSON.stringify(apis, null, 2));
     var plans = utils.loadPlans(req.app);
     var groups = utils.loadGroups(req.app);
+    var authServers = utils.getAuthServers(req.app);
     res.render('apis',
         {
             configPath: req.app.get('config_path'),
@@ -17,7 +19,8 @@ router.get('/', function (req, res, next) {
             title: 'wicked - Kickstarter',
             apis: apis.apis,
             plans: plans.plans,
-            groups: groups.groups
+            groups: groups.groups,
+            authServers: authServers
         });
 });
 
@@ -98,7 +101,7 @@ router.get('/:apiId', function(req, res, next) {
     //utils.mixinEnv(config.api, envVars);
     utils.mixinEnv(config.api, envDict);
     var apis = {};
-    var safeApiId = apiId.replace(/\-/g, '');
+    var safeApiId = utils.makeSafeId(apiId);
     apis[safeApiId] = { api: config.api };
     var plugins = pluginUtils.makeViewModel(config.plugins);
     console.log(JSON.stringify(plugins, null, 2));

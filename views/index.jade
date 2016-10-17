@@ -54,16 +54,17 @@ block content
     .row
       +section('plans', kickstarter, 'Plans', 'Which API Plans are needed? Specify plans to be applied to API subscriptions; this can be rate limiting, or whether a subscription needs to be approved of or not.')
       +section('apis', kickstarter, 'API Configuration', 'Which APIs will be published with which security mechanism? wicked supports both securing via API Keys as well as using OAuth2 Client Credentials. You will need to specify which method you want. Here you also specify additional API level plugins. And Swagger files.')
-      +section('recaptcha', kickstarter, 'reCAPTCHA', 'Do you want to configure reCAPTCHA? The wicked API portal can make use of reCAPTCHA for user registration and for retrieving lost passwords.')
+      +section('authservers', kickstarter, 'Authorization Servers', 'In case you are using OAuth2 flows other than the Client Credentials Flow, you will need an Authorization Server. Register it here.')
   hr
   .container
     .row
+      +section('recaptcha', kickstarter, 'reCAPTCHA', 'Do you want to configure reCAPTCHA? The wicked API portal can make use of reCAPTCHA for user registration and for retrieving lost passwords.')
       +section('content', kickstarter, 'Markdown Content', 'Do you need custom content? You may add additional Markdown files to the portal which can also be contained within the static configuration. This even includes restricting to groups.')
       +section('email', kickstarter, 'Email', 'How should wicked send emails? Some things in wicked require emails to be sent. Here you can configure which SMTP server should be used.')
-      +section('chatbot', kickstarter, 'Chatbot', 'wicked may integrate to IRC style chat systems which work like Slack; it has been tested with Slack and Rocket.Chat.')
   hr
   .container
     .row
+      +section('chatbot', kickstarter, 'Chatbot', 'wicked may integrate to IRC style chat systems which work like Slack; it has been tested with Slack and Rocket.Chat.')
       +section('templates', kickstarter, 'Templates', 'Specify templates for the mailer and the chatbot.')
       +section('design', kickstarter, 'Design', 'Which styles and design do you want to use? Portal main title and footer, a couple of colors and design elements are prepared for customization without actually changing the code. Configure it here.')
     .row
