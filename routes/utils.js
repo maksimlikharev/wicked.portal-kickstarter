@@ -929,6 +929,8 @@ utils.createCerts = function (app, validDays) {
     let envDict = utils.loadEnvDict(app);
     for (let env in kick.envs) {
         let envName = kick.envs[env];
+        if (envName === 'localhost') // Don't do it for localhost
+            continue;
         utils.createCert(app, glob, envDict, certsDir, envName, validDays);
     }
 };
