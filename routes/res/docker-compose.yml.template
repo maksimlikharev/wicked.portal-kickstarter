@@ -90,6 +90,7 @@ services:
     image: {{{dockerPrefix}}}portal-kong-adapter:{{dockerTag}}
     depends_on:
     - "portal-api"
+    - "kong"
     restart: unless-stopped
     command: "npm start"
 
