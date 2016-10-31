@@ -29,6 +29,29 @@ router.post('/', function (req, res, next) {
     res.redirect('/authservers/' + serverName);
 });
 
+const knownProperties = {
+    'id': true,
+    'name': true,
+    'desc': true,
+    'url': true,
+    'urlDescription': true,
+    'config': true
+};
+
+function isPropertyKnown(propName) {
+    return knownProperties.hasOwnProperty(propName);
+}
+
+function getUnknownProperties(serverConfig) {
+    const otherProperties = {};
+    for (let propName in serverConfig) {
+        if (isPropertyKnown(propName))
+            continue;
+        otherProperties[propName] = serverConfig[propName];
+    }
+    return otherProperties;
+}
+
 router.get('/:serverId', function (req, res, next) {
     var glob = utils.loadGlobals(req.app);
     var envVars = utils.loadEnvDict(req.app);
@@ -45,6 +68,8 @@ router.get('/:serverId', function (req, res, next) {
     if (authServerInfo.config && authServerInfo.config.plugins)
         origPlugins = authServerInfo.config.plugins;
     const plugins = pluginUtils.makeViewModel(origPlugins);
+    const otherProperties = JSON.stringify(getUnknownProperties(authServerInfo), null, 2);
+    console.log(otherProperties);
 
     res.render('authserver', {
         configPath: req.app.get('config_path'),
@@ -52,9 +77,20 @@ router.get('/:serverId', function (req, res, next) {
         serverId: serverId,
         safeServerId: safeServerId,
         authServer: authServerInfoWithName,
-        plugins: plugins
+        plugins: plugins,
+        otherProperties: otherProperties
     });
 });
+
+function mixinUnknownProperties(serverConfig, otherProperties) {
+    for (let propName in otherProperties) {
+        if (isPropertyKnown(propName)) {
+            console.error('Duplicate property name in auth server config: ' + propName + ', discarding.');
+            continue;
+        }
+        serverConfig[propName] = otherProperties[propName];
+    }
+}
 
 router.post('/:serverId', function (req, res, next) {
     var redirect = req.body.redirect;
@@ -66,13 +102,17 @@ router.post('/:serverId', function (req, res, next) {
     const updatedInfo = body.authServer[safeServerId];
     authServer.desc = updatedInfo.desc;
     authServer.url = updatedInfo.url;
+    authServer.urlDescription = updatedInfo.urlDescription;
     authServer.config = updatedInfo.config;
 
     const pluginsArray = pluginUtils.makePluginsArray(body.plugins);
     authServer.config.plugins = pluginsArray;
     console.log(JSON.stringify(authServer, null, 2));
 
-    utils.saveAuthServer(req.app, serverId, authServer); 
+    const otherProperties = JSON.parse(body.otherProperties);
+    mixinUnknownProperties(authServer, otherProperties);
+
+    utils.saveAuthServer(req.app, serverId, authServer);
 
     res.redirect(redirect);
 });

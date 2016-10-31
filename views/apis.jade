@@ -26,16 +26,10 @@ mixin renderApi(api, i)
                                 if "oauth2" == api.auth
                                     option key-auth
                                     option(selected) oauth2
-                                    option oauth2-implicit
-                                else if ("oauth2-implicit" == api.auth)
-                                    option key-auth
-                                    option oauth2
-                                    option(selected) oauth2-implicit
                                 else
                                     option(selected) key-auth
                                     option oauth2
-                                    option oauth2-implicit
-                            p.wicked-note Select <code>key-auth</code> for API Key authentication, or <code>oauth2</code> for OAuth 2.0 Client Credentials Flow, and <code>oauth2-implicit</code> for the OAuth 2.0 Implicit Grant Flow (requires an Authorization Server)
+                            p.wicked-note Select <code>key-auth</code> for API Key authentication, or <code>oauth2</code> for OAuth 2.0. Implicit, Password and Authorization Code grants require an authorization server.
                         
                         - var oauthSettingsClass = 'collapse panel-collapse'
                         if (api.auth && api.auth.startsWith('oauth2'))
@@ -45,17 +39,22 @@ mixin renderApi(api, i)
                                 .panel-heading
                                     h4.panel-title OAuth 2.0 Settings
                                 .panel-body
+                                    label Supported Flows:
+                                    +checkBox(apiName + 'settings.enable_client_credentials', apis, '<b>Client Credentials</b> (two-legged, machine to machine)')
+                                    +checkBox(apiName + 'settings.enable_implicit_grant', apis, '<b>Implicit Grant</b> (three-legged, for e.g Single Page Applications/client side JavaScript)')
+                                    +checkBox(apiName + 'settings.enable_password_grant', apis, '<b>Resource Owner Password Grant</b> (three-legged, for e.g. native mobile Apps)')
+                                    +checkBox(apiName + 'settings.enable_authorization_code', apis, '<b>Authorization Code Grant</b> (three-legged, for APIs delegating access to user data)')
                                     +inputField2(apiName + 'settings.token_expiration', apis, 'Token Expiration (seconds):')
                                     .form-group
-                                        label Authorization Server (only for <code>oauth2-implicit</code>):
+                                        label Authorization Server (not needed for Client Credentials Flow):
                                         select(name='#{apiName}authServer').form-control
                                             for authS in authServers
                                                 if (api.authServer == authS)
                                                     option(selected)= authS
                                                 else
                                                     option= authS
-                                    +inputField2(apiName + 'settings.scopes', apis, 'Scopes:', 'string', 'Space-separated list of scopes. Only relevant for <code>oauth2-implicit currently</code>.')
-                                    +checkBox(apiName + 'settings.mandatory_scope', apis, '<b>Mandatory Scope:</b> If specified, it is not possible to create access tokens without explicitly specifying a scope. Otherwise an access token with an empty scope may be created. Only applicable to <code>oauth2-implicit</code> APIs.')
+                                    +inputField2(apiName + 'settings.scopes', apis, 'Scopes:', 'string', 'Space-separated list of scopes.')
+                                    +checkBox(apiName + 'settings.mandatory_scope', apis, '<b>Mandatory Scope:</b> If specified, it is not possible to create access tokens without explicitly specifying a scope. Otherwise an access token with an empty scope may be created.')
 
                         +inputField2(apiName + 'tags', apis, 'Tags:', 'string', 'Comma-separated list of tags which apply to this API. Not yet used in portal.')
 

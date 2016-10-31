@@ -94,6 +94,14 @@ mixin textareaField(source, dummy, label, heightPx)
             input(type='checkbox' name='#{inputId}_')
           | Use environment variable <code>#{envVarName}</code>
             
+mixin textareaField2(source, dummy, label, heightPx)
+  - var inputId = source
+  - var inputValue = eval(source)
+  if (!inputValue)
+    - inputValue = ''
+  .form-group
+    label(for='#{inputId}')= label
+    textarea(name='#{inputId}' id='#{inputId}' style='height:#{heightPx}px').form-control= inputValue
 
 mixin inputField2(source, dfkjldksjflsdjflsdf, label, inType, desc, readonly)
   - var inputId = source

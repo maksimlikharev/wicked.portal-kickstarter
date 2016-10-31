@@ -511,7 +511,7 @@ utils.loadApis = function (app) {
 utils.saveApis = function (app, apis) {
     for (let i = 0; i < apis.apis.length; ++i) {
         const thisApi = apis.apis[i];
-        if (thisApi.auth == 'oauth2-implicit') {
+        if (thisApi.auth == 'oauth2') {
             if (thisApi.settings && thisApi.settings.scopes && utils.isString(thisApi.settings.scopes)) {
                 const scopesString = thisApi.settings.scopes.trim();
                 if (scopesString && scopesString !== '')
@@ -519,9 +519,6 @@ utils.saveApis = function (app, apis) {
                 else
                     thisApi.settings.scopes = [];
             }
-        } else if (thisApi.auth == 'oauth2') {
-            if (thisApi.hasOwnProperty('authServer'))
-                delete thisApi.authServer;            
         } else if (thisApi.auth == 'key-auth') {
             if (thisApi.hasOwnProperty('settings'))
                 delete thisApi.settings;
