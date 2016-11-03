@@ -13,11 +13,15 @@ mixin renderApi(api, i)
                                 h4.panel-title 
                                     a(data-target='#collapse_#{i}' data-toggle='collapse') #{api.name}
                             td(style='text-align:right')
-                                button(type='submit' onclick="setAction('deleteApi', #{i});").btn.btn-danger Delete API
+                                if (api.deprecated)
+                                    button(type='submit' onclick="setAction('deleteApi', #{i});").btn.btn-danger Delete API
+                                else
+                                    i Cannot delete API (not deprecated)
                 div(id='collapse_#{i}').collapse.panel-collapse
                     .panel-body
                         - var apiName = 'apis[' + i + '].'
                         +inputField2(apiName + 'id', apis, 'API ID:', 'string', 'The ID of the API; must only contain a-z, - and _.', 'readonly')
+                        +checkBox(apiName + 'deprecated', apis, '<b>Deprecated</b>: Tick this to disable new subscriptions to your API. This is the first thing you should do when you want to phase out usage of an API. Second thing is to delete all subscriptions (in the running Portal, while the API is deprecated), then you can delete the API.')
                         +inputField2(apiName + 'name', apis, 'API Name:', 'string', 'Friendly name of the API')
                         +inputField2(apiName + 'desc', apis, 'Short Description:', 'string', 'May contain Markdown')
                         .form-group
@@ -111,6 +115,13 @@ block scripts
             }
         }
 
+        function confirmDelete() {
+            var action = $('#__action').val();
+            if (action === 'deleteApi')
+                return confirm("Are you sure you want to delete this API? If you still have active subscriptions to this API, the API Portal will not be able to start, so make sure all subscriptions are cancelled first.");
+            return true;
+        }
+
 block content
     .jumbotron
         .container
@@ -119,7 +130,7 @@ block content
             p Configure which APIs you want to expose via your API Portal
     
     .container
-        form(role='form' method='post' action='/apis')
+        form(role='form' method='post' action='/apis' onsubmit='return confirmDelete();')
 
             input(type='hidden' id='__action', name='__action' value='none')
             input(type='hidden' id='__object', name='__object' value='none')
