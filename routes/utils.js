@@ -501,9 +501,9 @@ utils.loadApis = function (app) {
                 mandatory_scope: false
             };
         }
-        if (!thisApi.authServer && authServers.length > 0) {
-            thisApi.authServer = authServers[0];
-        }
+//        if (!thisApi.authServers && authServers.length > 0) {
+//            thisApi.authServer = authServers[0];
+//        }
     }
     return apis;
 };
@@ -522,7 +522,7 @@ utils.saveApis = function (app, apis) {
         } else if (thisApi.auth == 'key-auth') {
             if (thisApi.hasOwnProperty('settings'))
                 delete thisApi.settings;
-            if (thisApi.hasOwnProperty('authServer'))
+            if (thisApi.hasOwnProperty('authServers'))
                 delete thisApi.authServer;
         }
 
