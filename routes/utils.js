@@ -551,12 +551,7 @@ utils.prepareNewApi = function (app, apiId) {
             name: apiId,
             request_path: "/" + apiId
         },
-        plugins: [{
-            name: 'file-log',
-            config: {
-                path: '/usr/local/kong/logs/kong-access.log'
-            }
-        }]
+        plugins: []
     };
     var apiSwagger = {
         swagger: "2.0",
