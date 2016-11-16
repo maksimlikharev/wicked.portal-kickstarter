@@ -307,7 +307,7 @@ utils.loadEnvDict = function (app, usedEnvVars) {
                 console.log('Picked up new env var ' + propName);
                 defaultEnv[propName] = {
                     encrypted: false,
-                    value: 'new property'
+                    value: 'new property\nedit value'
                 };
             }
         }
