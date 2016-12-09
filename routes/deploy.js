@@ -55,15 +55,12 @@ router.post('/', function (req, res, next) {
         // Create new Dockerfiles
         var composeTemplate = utils.readDockerComposeTemplate(req.app);
         var dockerfileTemplate = utils.readDockerfileTemplate(req.app);
-        var variablesTemplate = utils.readDockerVariablesTemplate(req.app);
 
         var composeContent = mustache.render(composeTemplate, body);
         var dockerfileContent = mustache.render(dockerfileTemplate, body);
-        var variablesContent = mustache.render(variablesTemplate, body);
 
         utils.writeDockerComposeFile(req.app, composeContent);
         utils.writeDockerfile(req.app, dockerfileContent);
-        utils.writeVariablesFile(req.app, variablesContent);
 
     } else if (body.editDockerfiles) {
         // Edit the Dockerfiles

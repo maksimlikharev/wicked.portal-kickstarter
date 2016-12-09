@@ -47,7 +47,6 @@ services:
     - "EXCLUDE_PORTS=7946,8001,8443"
     - "EXTRA_SETTINGS=http-request set-header X-Forwarded-Port %[dst_port]"
     - "SSL_CERT=${GATEWAY_PEM}"
-    command: "dockerize -timeout 30s -wait tcp://kong-database:5432 kong start"
     restart: unless-stopped
 
   portal-api-data-static:
@@ -64,15 +63,23 @@ services:
     command: "/bin/true"
 
   portal-api:
-    env_file: variables.env  
     image: {{{dockerPrefix}}}portal-api:{{dockerTag}}
     volumes_from:
     - "portal-api-data-static"
     - "portal-api-data-dynamic"
     restart: unless-stopped
+    environment:
+    - NODE_ENV
+    - DEBUG
+    - {{portalHostEnvVar}}
+    - {{apiHostEnvVar}}
+    - PORTAL_CONFIG_KEY
+    - GIT_REPO
+    - GIT_BRANCH
+    - GIT_CREDENTIALS
+    - GIT_REVISION
 
   portal:
-    env_file: variables.env  
     image: {{{dockerPrefix}}}portal:{{dockerTag}}
     depends_on:
     - "portal-api"
@@ -82,30 +89,31 @@ services:
     - "VIRTUAL_HOST=https://{{portalHost}}:443"
     - "VIRTUAL_HOST_WEIGHT=0"
     - "SSL_CERT=${PORTAL_PEM}"
-    command: "npm start"
     restart: unless-stopped
+    environment:
+    - DEBUG
 
   portal-kong-adapter:
-    env_file: variables.env  
     image: {{{dockerPrefix}}}portal-kong-adapter:{{dockerTag}}
     depends_on:
     - "portal-api"
     - "kong"
     restart: unless-stopped
-    command: "npm start"
+    environment:
+    - DEBUG
 
   portal-mailer:
-    env_file: variables.env  
     image: {{{dockerPrefix}}}portal-mailer:{{dockerTag}}
     restart: unless-stopped
     depends_on:
     - "portal-api"
-    command: "npm start"
-  
+    environment:
+    - DEBUG
+
   portal-chatbot:
-    env_file: variables.env  
     image: {{{dockerPrefix}}}portal-chatbot:{{dockerTag}}
     restart: unless-stopped
     depends_on:
     - "portal-api"
-    command: "npm start"
+    environment:
+    - DEBUG
