@@ -886,16 +886,6 @@ utils.writeDockerfile = function (app, dockerFileContent) {
     fs.writeFileSync(dockerFile, dockerFileContent, 'utf8');
 };
 
-utils.readDockerVariablesTemplate = function (app) {
-    return fs.readFileSync(path.join(getResDir(), 'variables.env.template'), 'utf8');
-};
-
-utils.writeVariablesFile = function (app, variablesContent) {
-    var baseDir = getBaseDir(app);
-    var variablesFile = path.join(baseDir, 'variables.env');
-    fs.writeFileSync(variablesFile, variablesContent, 'utf8');
-};
-
 // ==== SSL / CERTIFICATES
 
 function getCertsDir(app) {
