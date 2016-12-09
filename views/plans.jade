@@ -13,7 +13,7 @@ mixin planPanel(plan, index, groups)
                             tr
                                 td
                                     h4.panel-title
-                                        a(data-target='#collapse_#{plan.id}' data-toggle='collapse') #{plan.name} - #{plan.id}
+                                        a(data-target='#collapse_#{plan.id}' data-toggle='collapse') #{plan.name} - #{plan.id} &raquo;
                                 td(style='text-align:right')
                                     button(type='submit' onclick='setAction("deletePlan", #{index});').btn.btn-danger Delete Plan
                     - var collapseIn = ''
