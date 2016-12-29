@@ -6,6 +6,15 @@ block scripts
       return confirm("Are you sure you want to delete the environment?");
     }
 
+    function checkValidEnvName() {
+      var envName = $('#new_env').val();
+      if (!/^[a-z0-9\-]+$/.test(envName)) {
+        alert('Environment name is invalid, must only contain lower case letters, digits and hyphens: "' + envName + '"');
+        return false;
+      }
+      return true;
+    }
+
 block content
   .jumbotron
     .container
@@ -51,11 +60,12 @@ block content
           a(data-toggle='collapse' data-target='#collapse') Create new Environment &raquo;
       #collapse.collapse.panel-collapse
         .panel-body
-          form(role='form' action='/envs' method='post')
+          form(role='form' action='/envs' method='post' onsubmit='return checkValidEnvName()')
             p.
               Specify a name for the environment. It can contain lower case letters <code>a-z</code>, digits and hyphens <code>-</code>. The new environment will not contain any overridden variables. To create an environment for local node.js development, use the name <code>localhost</code>, and Kickstarter will specify some special values for you to help you with that.
             
             input(name='new_env' id='new_env' type='string').form-control
+            p.wicked-note The environment name must only contain lower case letters <code>a-z</code>, digits <code>0-9</code> and hyphens <code>-</code>
           
             br
 
