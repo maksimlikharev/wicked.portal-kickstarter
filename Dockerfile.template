@@ -1,5 +1,7 @@
 FROM ${DOCKER_PREFIX}portal-env:${DOCKER_TAG}-onbuild
 
+USER root
+
 ENTRYPOINT ["node", "bin/kickstart"]
 CMD ["/var/portal-api"]
 
