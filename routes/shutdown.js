@@ -5,7 +5,7 @@ var router = express.Router();
 
 router.get('/', function (req, res, next) {
     console.log('Received /shutdown, closing server.');
-    res.send('Kickstarter has been shut down.');
+    res.send('Kickstarter has been shut down. <a href="/">Main Index</a>.');
     process.exit(0);
 });
 
