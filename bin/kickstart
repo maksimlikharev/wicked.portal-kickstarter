@@ -227,8 +227,7 @@ function onListening() {
         'port ' + addr.port;
     debug('Listening on ' + bind);
     console.log("Kickstarter running. Browse to http://localhost:" + port);
-    console.log("--> To shut down, use the 'shutdown' icon on the web page.");
-    console.log("--> In case you forgot to route the port (docker) via -p, use docker stop to stop container.");
+    console.log("--> To shut down, use the 'shutdown' icon on the web page or press Ctrl-C.");
 }
 
 function findEnvKeyFileName(baseDir) {
