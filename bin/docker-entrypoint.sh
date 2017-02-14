@@ -10,7 +10,7 @@ startedNode=0
 if [ ! -z "${LOCAL_UID}" ] && [ ! -z "${LOCAL_GID}" ]; then
     if [ ! "${LOCAL_GID}" = "0" ]; then
         echo "Adding group with GID ${LOCAL_GID}..."
-        if groupadd -r usergroup --gid=${LOCAL_GID}; then
+        if groupadd -r usergroup -g ${LOCAL_GID}; then
             echo "Succeeded."
         else
             echo "Did not succeed, assuming group already present."
@@ -22,14 +22,15 @@ if [ ! -z "${LOCAL_UID}" ] && [ ! -z "${LOCAL_GID}" ]; then
         if [ ! "${LOCAL_UID}" = "1000" ]; then
             echo "Not running as root or user node..."
             echo "Creating user..."
-            useradd -r -g ${LOCAL_GID} --uid=${LOCAL_UID} localuser
+            useradd -r -g ${LOCAL_GID} -u ${LOCAL_UID} localuser
         else
             echo "Using predefined user 'node' (UID 1000)."
-            localuser="node"
+            username="node"
         fi
         echo "Running with UID ${LOCAL_UID} and GID ${LOCAL_GID}."
+        echo "Local username: $username"
         startedNode=1
-        gosu $localuser node bin/kickstart "$@"
+        gosu $username node bin/kickstart "$@"
     fi
 fi
 
