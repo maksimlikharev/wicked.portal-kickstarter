@@ -2,7 +2,7 @@ FROM ${DOCKER_PREFIX}portal-env:${DOCKER_TAG}-onbuild
 
 USER root
 
-ENTRYPOINT ["node", "bin/kickstart"]
+ENTRYPOINT ["/usr/src/app/bin/docker-entrypoint.sh"]
 CMD ["/var/portal-api"]
 
 EXPOSE 3333
