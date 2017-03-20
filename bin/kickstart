@@ -123,25 +123,13 @@ var configKey = fs.readFileSync(configKeyFileName, 'utf8').trim();
 
 // Check if we need to update the static DB?
 try {
-    envReader.updateConfig(configPath, utils.getInitialStaticConfigDir());
+    envReader.updateConfig(configPath, utils.getInitialStaticConfigDir(), configKey);
 } catch (dbErr) {
     console.error(dbErr);
     throw Error("The Configuration update steps failed. Check log files for details.");
 }
 
-//if (!fs.existsSync(envFileName)) {
-//    console.log('Could not find env file at ' + envFileName + ', creating a new one.');
-//    fs.writeFileSync(envFileName, '', encoding='utf8');
-//}
-
 configPath = path.resolve(configPath);
-//try {
-//    var envJson = JSON.parse(fs.readFileSync(envFileName, encoding='utf8'));
-//} catch (err) {
-//    console.log('Env file does not seem to be a valid JSON file: ' + envFileName);
-//    console.log(err);
-//    process.exit(1);
-//}
 
 app.set('base_path', basePath);
 app.set('config_path', configPath);
