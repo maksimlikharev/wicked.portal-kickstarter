@@ -71,8 +71,8 @@ services:
     environment:
     - NODE_ENV
     - DEBUG
-    - {{portalHostEnvVar}}
-    - {{apiHostEnvVar}}
+    - {{portalHostVarName}}
+    - {{apiHostVarName}}
     - PORTAL_CONFIG_KEY
     - GIT_REPO
     - GIT_BRANCH
@@ -89,9 +89,8 @@ services:
     - "VIRTUAL_HOST=https://{{portalHost}}:443"
     - "VIRTUAL_HOST_WEIGHT=0"
     - "SSL_CERT=${PORTAL_PEM}"
+    - "DEBUG"
     restart: unless-stopped
-    environment:
-    - DEBUG
 
   portal-kong-adapter:
     image: {{{dockerPrefix}}}portal-kong-adapter:{{dockerTag}}
