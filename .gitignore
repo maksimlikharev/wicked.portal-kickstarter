@@ -1,3 +1,7 @@
-Dockerfile
-node_modules
+*envkey
 .DS_Store
+certs
+dynamic
+node_modules
+static
+Dockerfile

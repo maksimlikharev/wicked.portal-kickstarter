@@ -31,10 +31,12 @@ router.get('/', function (req, res, next) {
     let portalHost = fwibbleHost(glob.network.portalHost);
     let portalHostVarName = utils.resolveEnvVarName(glob.network.portalHost.trim(), 'PORTAL_NETWORK_PORTALHOST');
     let apiHostVarName = utils.resolveEnvVarName(glob.network.apiHost.trim(), 'PORTAL_NETWORK_APIHOST');
+    let dockerTag = utils.getVersion();
 
     res.render('deploy', {
         configPath: req.app.get('config_path'),
         hasDockerFiles: hasDockerFiles,
+        dockerTag: dockerTag,
         dockerComposeFile: dockerComposeFile,
         dockerFile: dockerFile,
         apiHost: apiHost,
@@ -52,6 +54,8 @@ router.post('/', function (req, res, next) {
     // Do things with the POST body.
     console.log(body);
     if (body.createDockerfiles) {
+        if (body.alpine)
+            body.buildAlpine = "-alpine";
         // Create new Dockerfiles
         var composeTemplate = utils.readDockerComposeTemplate(req.app);
         var dockerfileTemplate = utils.readDockerfileTemplate(req.app);

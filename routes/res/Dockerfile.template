@@ -1,4 +1,4 @@
-FROM {{{dockerPrefix}}}portal-api:{{dockerTag}}
+FROM {{{dockerPrefix}}}portal-api:{{dockerTag}}{{buildAlpine}}
 
 COPY . /tmp/portal-api
 

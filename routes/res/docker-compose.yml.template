@@ -57,13 +57,13 @@ services:
     command: "/bin/true"
 
   portal-api-data-dynamic:
-    image: {{{dockerPrefix}}}portal-api:{{dockerTag}}
+    image: {{{dockerPrefix}}}portal-api:{{dockerTag}}{{buildAlpine}}
     volumes:
     - "/var/portal-api/dynamic"
     command: "/bin/true"
 
   portal-api:
-    image: {{{dockerPrefix}}}portal-api:{{dockerTag}}
+    image: {{{dockerPrefix}}}portal-api:{{dockerTag}}{{buildAlpine}}
     volumes_from:
     - "portal-api-data-static"
     - "portal-api-data-dynamic"
@@ -80,7 +80,7 @@ services:
     - GIT_REVISION
 
   portal:
-    image: {{{dockerPrefix}}}portal:{{dockerTag}}
+    image: {{{dockerPrefix}}}portal:{{dockerTag}}{{buildAlpine}}
     depends_on:
     - "portal-api"
     expose:
@@ -93,7 +93,7 @@ services:
     restart: unless-stopped
 
   portal-kong-adapter:
-    image: {{{dockerPrefix}}}portal-kong-adapter:{{dockerTag}}
+    image: {{{dockerPrefix}}}portal-kong-adapter:{{dockerTag}}{{buildAlpine}}
     depends_on:
     - "portal-api"
     - "kong"
@@ -102,7 +102,7 @@ services:
     - DEBUG
 
   portal-mailer:
-    image: {{{dockerPrefix}}}portal-mailer:{{dockerTag}}
+    image: {{{dockerPrefix}}}portal-mailer:{{dockerTag}}{{buildAlpine}}
     restart: unless-stopped
     depends_on:
     - "portal-api"
@@ -110,7 +110,7 @@ services:
     - DEBUG
 
   portal-chatbot:
-    image: {{{dockerPrefix}}}portal-chatbot:{{dockerTag}}
+    image: {{{dockerPrefix}}}portal-chatbot:{{dockerTag}}{{buildAlpine}}
     restart: unless-stopped
     depends_on:
     - "portal-api"
