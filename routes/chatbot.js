@@ -10,6 +10,10 @@ router.get('/', function (req, res, next) {
     var envVars = utils.loadEnvDict(req.app);
     utils.mixinEnv(glob, envVars);
 
+    if (!glob.chatbot.hookUrls) {
+        glob.chatbot.hookUrls = [];
+    }
+
     res.render('chatbot',
         {
             configPath: req.app.get('config_path'),
@@ -26,14 +30,17 @@ router.post('/', function (req, res, next) {
     var envVars = utils.loadEnvDict(req.app);
     glob.chatbot = body.glob.chatbot;
     utils.mixoutEnv(glob, envVars);
-    
+
     if ("deleteHook" == body.__action) {
         var index = Number(body.__object);
         glob.chatbot.hookUrls.splice(index, 1);
     } else if ("addHook" == body.__action) {
+        if (!glob.chatbot.hookUrls) {
+            glob.chatbot.hookUrls = [];
+        }
         glob.chatbot.hookUrls.push('https://url.to.your.slack/hookidentifierwhichisasecrect');
     }
-    
+
     utils.saveGlobals(req.app, glob);
     utils.saveEnvDict(req.app, envVars, "default");
 
