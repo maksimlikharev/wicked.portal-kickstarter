@@ -53,7 +53,7 @@ mixin renderApi(api, i)
                                         label Authorization Servers:
                                         p Specify which Authorization Servers are allowed for Authorization of use of this API. This is not needed if you only plan to use the Client Credentials Flow. For all others, you will need an Authorization Server (which you have to implement).
                                         for authS in authServers
-                                            +checkBox(apiName + 'authServers.' + authS.replace('-', '_'), apis, '<b>' + authS + '</b>')
+                                            +checkBox(apiName + 'authServers.' + authS.replace(/\-/g, '_'), apis, '<b>' + authS + '</b>')
                                     +inputField2(apiName + 'settings.scopes', apis, 'Scopes:', 'string', 'Space-separated list of scopes.')
                                     +checkBox(apiName + 'settings.mandatory_scope', apis, '<b>Mandatory Scope:</b> If specified, it is not possible to create access tokens without explicitly specifying a scope. Otherwise an access token with an empty scope may be created.')
 

@@ -17,7 +17,7 @@ router.get('/', function (req, res, next) {
         } else {
             const obAuthServers = {};
             for (let j = 0; j < apis.apis[i].authServers.length; ++j) {
-                const safeName = apis.apis[i].authServers[j].replace('-', '_');
+                const safeName = apis.apis[i].authServers[j].replace(/\-/g, '_');
                 obAuthServers[safeName] = true;
             }
             apis.apis[i].authServers = obAuthServers;
@@ -45,7 +45,7 @@ router.post('/', function (req, res, next) {
     var authServerSafeNames = {};
     for (let i = 0; i < authServers.length; ++i) {
         const serverName = authServers[i];
-        authServerSafeNames[serverName.replace('-', '_')] = serverName;
+        authServerSafeNames[serverName.replace(/\-/g, '_')] = serverName;
     }
 
     if ("addApi" == body.__action) {
