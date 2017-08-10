@@ -7,6 +7,7 @@ pluginUtils.makeViewModel = function (configPlugins) {
     var foundCors = false;
     var foundFileLog = false;
     var foundCorrelationId = false;
+    var foundAwsLambda = false;
 
     var plugins = {
         others: {
@@ -33,6 +34,10 @@ pluginUtils.makeViewModel = function (configPlugins) {
             plugins.correlation_id = plugin;
             plugins.correlation_id.useCorrelationId = true;
             foundCorrelationId = true;
+        } else if ("aws-lambda" == plugin.name) {
+            plugins.aws_lambda = plugin;
+            plugins.aws_lambda.useAwsLambda = true;
+            foundAwsLambda = true;
         } else {
             // Other plugin, here's room for extensions
             plugins.others.useOthers = true;
@@ -51,6 +56,17 @@ pluginUtils.makeViewModel = function (configPlugins) {
             }
         };
     }
+    if (!foundAwsLambda) {
+        // Add a stub
+        plugins.aws_lambda = {
+            useAwsLambda: false,
+            name: "aws-lambda",
+            config: {
+                aws_region: 'us-east-1'
+            }
+        };
+    }
+
     if (!foundCors) {
         // Add a stub for CORS
         plugins.cors = {
@@ -131,6 +147,7 @@ function fixRateLimiting(data) {
     return data;
 }
 
+
 // Sanitize JSON format for Kong
 function fixCors(data) {
     //console.log('fixCors: ' + JSON.stringify(data, null, 2));
@@ -159,6 +176,11 @@ pluginUtils.makePluginsArray = function (bodyPlugins) {
         delete bodyPlugins.rate_limiting.useRateLimiting;
         bodyPlugins.rate_limiting.name = 'rate-limiting';
         plugins.push(fixRateLimiting(bodyPlugins.rate_limiting));
+    }
+    if (bodyPlugins.aws_lambda.useAwsLambda) {
+        delete bodyPlugins.aws_lambda.useAwsLambda;
+        bodyPlugins.aws_lambda.name = 'aws-lambda';
+        plugins.push(bodyPlugins.aws_lambda);
     }
     if (bodyPlugins.cors && bodyPlugins.cors.useCors) {
         delete bodyPlugins.cors.useCors;

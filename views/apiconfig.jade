@@ -43,6 +43,7 @@ block content
                             +rateLimitingPanel('', plugins)
                             +correlationIdPanel('', plugins, plugins.correlation_id.config.generator)
                             +corsPanel('', plugins)
+                            +awsLambdaPanel('', plugins)
                             +otherPluginsPanel('', plugins, 'PORTAL_APIS_' + apiId)
                 .col-md-2
                     | &nbsp;
