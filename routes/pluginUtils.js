@@ -177,7 +177,7 @@ pluginUtils.makePluginsArray = function (bodyPlugins) {
         bodyPlugins.rate_limiting.name = 'rate-limiting';
         plugins.push(fixRateLimiting(bodyPlugins.rate_limiting));
     }
-    if (bodyPlugins.aws_lambda.useAwsLambda) {
+    if (bodyPlugins.aws_lambda && bodyPlugins.aws_lambda.useAwsLambda) {
         delete bodyPlugins.aws_lambda.useAwsLambda;
         bodyPlugins.aws_lambda.name = 'aws-lambda';
         plugins.push(bodyPlugins.aws_lambda);
