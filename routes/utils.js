@@ -946,7 +946,7 @@ utils.createCert = function (app, glob, envDict, certsDir, envName, validDays) {
     let openSslApi = 'openssl req -x509 -nodes -days ' + validDays +
         ' -newkey rsa:2048 -keyout ' + envName + '/gateway-key.pem' +
         ' -out ' + envName + '/gateway-cert.pem' +
-        ' -subj "/CN=' + portalHost + '"';
+        ' -subj "/CN=' + apiHost + '"';
 
     let portalLogFile = path.join(certsDir, envName, 'portal-openssl.txt');
     let apiLogFile = path.join(certsDir, envName, 'gateway-openssl.txt');
