@@ -14,6 +14,10 @@ block scripts
         function copyToGoogleCallback() {
             $('#glob\\.auth\\.google\\.callbackURL').val(callbackBase + 'callback/google');
         }
+        function copyToOauth2Callback() {
+            $('#glob\\.auth\\.oauth2\\.callbackURL').val(callbackBase + 'callback/oauth2');
+        }
+
 
 block content
     .jumbotron
@@ -62,5 +66,13 @@ block content
                 +inputField('glob.auth.google.clientSecret', glob, 'Client Secret')
                 +inputField('glob.auth.google.callbackURL', glob, 'Callback URL')
                 a(href='javascript:copyToGoogleCallback();').btn.btn-default  Get Callback URL from Portal Host
+        
+            img(src='/images/oauth2-logo.png')
+            +checkPanel('glob.auth.oauth2.useOauth2', !!glob.auth.oauth2.useOauth2, 'Use Oauth 2.0 Authentication')
+                +inputField('glob.auth.oauth2.authorizationURL', glob, 'Authorization URL')
+                +inputField('glob.auth.oauth2.clientID', glob, 'Client ID')
+                +inputField('glob.auth.oauth2.clientSecret', glob, 'Client Secret')
+                +inputField('glob.auth.oauth2.callbackURL', glob, 'Callback URL')
+                a(href='javascript:copyToOauth2Callback();').btn.btn-default  Get Callback URL from Portal Host
 
             +renderButtons('/auth', '/deploy', '/groups')
