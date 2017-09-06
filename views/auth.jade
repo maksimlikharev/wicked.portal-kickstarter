@@ -70,6 +70,7 @@ block content
             img(src='/images/oauth2-logo.png')
             +checkPanel('glob.auth.oauth2.useOauth2', !!glob.auth.oauth2.useOauth2, 'Use Oauth 2.0 Authentication')
                 +inputField('glob.auth.oauth2.authorizationURL', glob, 'Authorization URL')
+                +inputField('glob.auth.oauth2.tokenURL', glob, 'Token URL')
                 +inputField('glob.auth.oauth2.clientID', glob, 'Client ID')
                 +inputField('glob.auth.oauth2.clientSecret', glob, 'Client Secret')
                 +inputField('glob.auth.oauth2.callbackURL', glob, 'Callback URL')
