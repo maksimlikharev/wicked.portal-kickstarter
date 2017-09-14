@@ -106,6 +106,8 @@ mixin textareaField2(source, dummy, label, heightPx)
 mixin inputField2(source, dfkjldksjflsdjflsdf, label, inType, desc, readonly)
   - var inputId = source
   - var inputValue = eval(source)
+  if(inType=='array')
+   - inputId = inputId+'[]'
   if (!inputValue)
     - inputValue = ''
   - var inputType = "string"

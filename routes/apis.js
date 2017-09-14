@@ -117,7 +117,6 @@ router.post('/', function (req, res, next) {
             delete apis.apis[i].requiredGroup;
     }
 
-    //console.log(apis.apis);
     utils.saveApis(req.app, apis);
 
     // Write changes to Kickstarter.json
@@ -157,7 +156,6 @@ router.post('/:apiId', function (req, res, next) {
     var envVars = utils.loadEnvDict(req.app);
 
     var body = utils.jsonifyBody(req.body);
-    //console.log(JSON.stringify(body, null, 2));
 
     var plugins = pluginUtils.makePluginsArray(body.plugins);
     //console.log(JSON.stringify(plugins, null, 2));
@@ -167,7 +165,6 @@ router.post('/:apiId', function (req, res, next) {
         plugins: plugins
     };
     utils.mixoutEnv(config.api, envVars, 'PORTAL_APIS_' + safeApiId.toUpperCase());
-    console.log(JSON.stringify(config, null, 2));
 
     utils.saveApiConfig(req.app, apiId, config);
     utils.saveEnvDict(req.app, envVars, "default");
