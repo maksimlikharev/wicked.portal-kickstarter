@@ -36,13 +36,17 @@ block content
                                     or specify your own builds of the API Portal container images.
                                 
                                 .form-group
-                                    label HA Proxy Version: (<a href="https://hub.docker.com/r/dockercloud/haproxy/tags/" target="_blank">Tags</a>)
-                                    input(type="text" name="haProxyVersion" value="1.6.7").form-control
+                                    label HA Proxy Version: (<a href="https://hub.docker.com/r/library/haproxy/tags/" target="_blank">Tags</a>)
+                                    input(type="text" name="haProxyVersion" value="1.6.13").form-control
 
                                 .form-group
                                     label PostgreSQL Version: (<a href="https://hub.docker.com/r/library/postgres/tags/" target="_blank">Tags</a>)
                                     input(type="text" name="postgresVersion" value="9.6").form-control
 
+                                .form-group
+                                    label Redis Version: (<a href="https://hub.docker.com/r/library/redis/tags/" target="_blank">Tags</a>)
+                                    input(type="text" name="redisVersion" value="3.2.10-alpine").form-control
+                                
                                 .form-group
                                     label Docker Base Image prefix:
                                     input(type="text" name="dockerPrefix" value="haufelexware/wicked.").form-control

@@ -125,5 +125,14 @@ block content
                     +inputField('glob.network.kongAdminUrl', glob, 'Kong Management URL:', 'string', 'The Kong Admin URL (usually port 8001), as seen from behind the load balancer.', 'PORTAL_KONG_ADMIN_URL')
                     +inputField('glob.network.mailerUrl', glob, 'Mailer URL:', 'string', 'The URL under which the Mailer component can be reached (behind the load balancer).', 'PORTAL_MAILER_URL')
                     +inputField('glob.network.chatbotUrl', glob, 'Chatbot URL:', 'string', 'The URL under which the Chatbot component can be reached (behind the load balancer).', 'PORTAL_CHATBOT_URL')
+
+                    hr
+
+                    p <b>Redis configuration</b>
+
+                    +inputField('glob.sessionStore.type', glob, 'Session Store type:', 'string', 'The portal session store type, <code>redis</code> or <code>file</code> is supported')
+                    +inputField('glob.sessionStore.host', glob, 'Redis Host:', 'string', 'The Redis host (if applicable)')
+                    +inputField('glob.sessionStore.port', glob, 'Redis Port:', 'string', 'The Redis port (if applicable, 6739 is default)')
+                    +inputField('glob.sessionStore.password', glob, 'Redis Password:', 'string', 'The Redis password (if applicable, leave empty to not use a password)')
             
             +renderButtons('/ipconfig', '/envs', '/deploy')

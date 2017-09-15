@@ -3,7 +3,7 @@ version: '2'
 services:
 
   publb:
-    image: dockercloud/haproxy:{{haProxyVersion}}
+    image: haproxy:{{haProxyVersion}}
     ports:
     - "443:443"
     - "1936:1936"
@@ -83,6 +83,7 @@ services:
     image: {{{dockerPrefix}}}portal:{{dockerTag}}{{buildAlpine}}
     depends_on:
     - "portal-api"
+    - "portal-redis"
     expose:
     - "3000"
     environment:
@@ -91,6 +92,11 @@ services:
     - "SSL_CERT=${PORTAL_PEM}"
     - "DEBUG"
     restart: unless-stopped
+
+  portal-redis:
+    image: redis:{{redisVersion}}
+    expose:
+    - "6379"
 
   portal-kong-adapter:
     image: {{{dockerPrefix}}}portal-kong-adapter:{{dockerTag}}{{buildAlpine}}
