@@ -44,7 +44,7 @@ services:
     - "DATABASE=postgres"
     - "VIRTUAL_HOST=https://{{apiHost}}:443"
     - "VIRTUAL_HOST_WEIGHT=100"
-    - "EXCLUDE_PORTS=7946,8001,8443"
+    - "EXCLUDE_PORTS=7946,8001,8443,8444"
     - "EXTRA_SETTINGS=http-request set-header X-Forwarded-Port %[dst_port]"
     - "SSL_CERT=${GATEWAY_PEM}"
     restart: unless-stopped
