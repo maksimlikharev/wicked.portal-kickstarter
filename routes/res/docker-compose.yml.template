@@ -3,7 +3,7 @@ version: '2'
 services:
 
   publb:
-    image: haproxy:{{haProxyVersion}}
+    image: dockercloud/haproxy:{{haProxyVersion}}
     ports:
     - "443:443"
     - "1936:1936"
