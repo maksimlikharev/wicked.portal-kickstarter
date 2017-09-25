@@ -75,5 +75,11 @@ block content
                 +inputField('glob.auth.oauth2.clientSecret', glob, 'Client Secret')
                 +inputField('glob.auth.oauth2.callbackURL', glob, 'Callback URL')
                 a(href='javascript:copyToOauth2Callback();').btn.btn-default  Get Callback URL from Portal Host
-
+                br
+                br
+                +inputField('glob.auth.oauth2.customIdField', glob, 'Profile Field for ID')
+                +inputField('glob.auth.oauth2.firstNameField', glob, 'Profile Field for First Name')
+                +inputField('glob.auth.oauth2.lastNameField', glob, 'Profile Field for Last Name')
+                +inputField('glob.auth.oauth2.emailField', glob, 'Profile Field for Email Address')
+          
             +renderButtons('/auth', '/deploy', '/groups')
