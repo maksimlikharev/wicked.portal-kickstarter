@@ -9,7 +9,7 @@ router.get('/', function (req, res, next) {
     var glob = utils.loadGlobals(req.app);
     var envVars = utils.loadEnvDict(req.app);
     utils.mixinEnv(glob, envVars);
-    res.render('kongadaptor',
+    res.render('kongAdapter',
         {
             configPath: req.app.get('config_path'),
             glob: glob
@@ -23,8 +23,8 @@ router.post('/', function (req, res, next) {
     var envVars = utils.loadEnvDict(req.app);
 
     var body = utils.jsonifyBody(req.body);
-    glob.kongAdaptor = body.glob.kongAdaptor;
-    body.glob.kongAdaptor.ignoreList = body.glob.kongAdaptor.ignoreList.split(',');
+    glob.kongAdapter = body.glob.kongAdapter;
+    body.glob.kongAdapter.ignoreList = body.glob.kongAdapter.ignoreList.split(',');
 
     utils.mixoutEnv(glob, envVars);
     
@@ -33,7 +33,7 @@ router.post('/', function (req, res, next) {
 
     // Write changes to Kickstarter.json
     var kickstarter = utils.loadKickstarter(req.app);
-    kickstarter.kongadaptor = 3;
+    kickstarter.kongAdapter = 3;
     utils.saveKickstarter(req.app, kickstarter);
 
     res.redirect(redirect);
