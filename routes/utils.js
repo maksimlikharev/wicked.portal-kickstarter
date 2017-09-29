@@ -47,8 +47,8 @@ function applyProperty(to, propName, value) {
                 //current[thisProp][index] = value;
                 var str_array = value.split(','); 
                 if(str_array.length>1){
-                  for(var i = 0; i < str_array.length; i++) {
-                     current[thisProp][index++] = str_array[i];
+                  for(var j = 0; j < str_array.length; j++) {
+                     current[thisProp][index++] = str_array[j];
                   }
                 } else {
                   current[thisProp][index] = value;
