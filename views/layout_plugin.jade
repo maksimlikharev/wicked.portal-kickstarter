@@ -40,6 +40,16 @@ mixin loggingPanel(prefix, data)
             though).
         +inputField2(prefix + 'plugins.file_log.config.path', data, 'File log path:', 'string', null, 'readonly')
 
+mixin awsLambdaPanel(prefix, data)
+    +pluginPanel(prefix + 'plugins.aws_lambda.useAwsLambda', data, "AWS Lambda")
+        h4 AWS Lambda configuration
+        p.
+            All of these fields must be filled (we won't check, but it will fail when deploying).       
+        +inputField2(prefix + 'plugins.aws_lambda.config.aws_key', data, "AWS Key:")
+        +inputField2(prefix + 'plugins.aws_lambda.config.aws_secret', data, "AWS Secret:")
+        +inputField2(prefix + 'plugins.aws_lambda.config.aws_region', data, "AWS Region:")
+        +inputField2(prefix + 'plugins.aws_lambda.config.function_name', data, "Function name:")
+  
 mixin rateLimitingPanel(prefix, data)
     +pluginPanel(prefix + 'plugins.rate_limiting.useRateLimiting', data, "Rate Limiting")
         h4 Rate limiting configuration
