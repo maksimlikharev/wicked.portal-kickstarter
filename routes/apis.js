@@ -164,6 +164,7 @@ router.post('/:apiId', function (req, res, next) {
         api: body.apis[safeApiId].api,
         plugins: plugins
     };
+    config.api.strip_uri = (!config.api.strip_uri) ? false : config.api.strip_uri;
     utils.mixoutEnv(config.api, envVars, 'PORTAL_APIS_' + safeApiId.toUpperCase());
 
     utils.saveApiConfig(req.app, apiId, config);
