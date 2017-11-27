@@ -65,7 +65,7 @@ mixin corsPanel(prefix, data)
             CORS, you will not be able to call your API from a browser. Which may be exactly what you do
             not want. For machine to machine communication, enabling this is <strong>not required</strong>
             and definitely <strong>not recommended</strong>.
-        +inputField2(prefix + 'plugins.cors.config.origin', plugins, 'Access-Control-Allow-Origin:', 'string', 'Allowed origins; to allow all origins, specify <code>*</code>')
+        +inputField2(prefix + 'plugins.cors.config.origins', plugins, 'Access-Control-Allow-Origin:', 'string', 'Allowed origins; to allow all origins, specify <code>*</code>')
         +inputField2(prefix + 'plugins.cors.config.methods', plugins, 'Access-Control-Allow-Methods', 'string', 'Value for the <code>Access-Control-Allow-Methods</code> header, expects a comma delimited string (e.g. GET,POST). Defaults to GET,HEAD,PUT,PATCH,POST,DELETE.')
         +inputField2(prefix + 'plugins.cors.config.headers', plugins, 'Access-Control-Allow-Headers', 'string', 'Value for the <code>Access-Control-Allow-Headers</code> header, expects a comma delimited string (e.g. <code>Origin,Authorization</code>). Defaults to the value of the <code>Access-Control-Request-Headers</code> header.')
         +inputField2(prefix + 'plugins.cors.config.exposed_headers', plugins, 'Access-Control-Expose-Headers', 'string', 'Value for the <code>Access-Control-Expose-Headers</code> header, expects a comma delimited string (e.g. <code>Origin,Authorization</code>). If not specified, no custom headers are exposed.')
