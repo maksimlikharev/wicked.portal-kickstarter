@@ -5,3 +5,5 @@ Dockerfile
 dynamic
 static
 Dockerfile
+git_*
+

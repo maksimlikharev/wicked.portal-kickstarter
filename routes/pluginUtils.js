@@ -73,7 +73,7 @@ pluginUtils.makeViewModel = function (configPlugins) {
             useCors: false,
             name: "cors",
             config: {
-                origin: '*',
+                origins: '*',
                 methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
             }
         };
@@ -156,7 +156,7 @@ function fixCors(data) {
     else if (data.config.hasOwnProperty('max_age'))
         delete data.config.max_age;
     var props = [
-        "origin",
+        "origins",
         "methods",
         "headers",
         "exposed_headers"

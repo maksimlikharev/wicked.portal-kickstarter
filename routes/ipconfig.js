@@ -33,6 +33,7 @@ router.post('/', function (req, res, next) {
     var envVars = utils.loadEnvDict(req.app);
     glob.network = body.glob.network;
     glob.db = body.glob.db;
+    glob.sessionStore = body.glob.sessionStore;
     
     utils.mixoutEnv(glob, envVars);
     

@@ -24,8 +24,8 @@ block content
                     +inputField('authServer.' + safeServerId + '.desc', authServer, 'Description:', 'string', 'Friendly description of the Authorization Server. Displayed on the API description page for APIs using this Server.')
                     input(type='hidden' name='authServer.' + safeServerId + '.config.api.name' value=authServer[safeServerId].config.api.name)
                     +inputField('authServer.' + safeServerId + '.config.api.upstream_url', authServer, 'Upstream (backend) URL:')
-                    +inputField2('authServer.' + safeServerId + '.config.api.request_path', authServer, 'Request Path:', 'string', 'This is the prefix you will use for this API on the API Gateway, e.g. `/petstore/v1`.')
-                    +checkBox('authServer.' + safeServerId + '.config.api.strip_request_path', authServer, '<b>Strip Request Path</b>. Check this box if you don\'t want to pass the request path to the backend URL as well; use this to rewrite backend URLs (they don\'t have to match the request URL).')
+                    +inputField2('authServer.' + safeServerId + '.config.api.uris', authServer, 'Request Uris:', 'array', 'This is the prefix you will use for this API on the API Gateway, e.g. `/petstore/v1`.')
+                    +checkBox('authServer.' + safeServerId + '.config.api.strip_uri', authServer, '<b>Strip Uri</b>. Check this box if you don\'t want to pass the uris to the backend URL as well; use this to rewrite backend URLs (they don\'t have to match the request URL).')
                     +checkBox('authServer.' + safeServerId + '.config.api.preserve_host', authServer, '<b>Preserve Host</b>. Preserves the original <code>Host</code> header sent by the client, instead of replacing it with the hostname of the <code>upstream_url</code>.')
 
             .panel.panel-primary

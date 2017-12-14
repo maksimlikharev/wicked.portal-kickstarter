@@ -37,7 +37,6 @@ function applyProperty(to, propName, value) {
         if (bracketPos >= 0) {
             var index = Number(thisProp.substring(bracketPos + 1, thisProp.length - 1));
             thisProp = thisProp.substring(0, bracketPos);
-
             if (!current.hasOwnProperty(thisProp))
                 current[thisProp] = [];
             if (i != subPropNames.length - 1) {
@@ -45,7 +44,15 @@ function applyProperty(to, propName, value) {
                     current[thisProp][index] = {};
                 current = current[thisProp][index];
             } else {
-                current[thisProp][index] = value;
+                //current[thisProp][index] = value;
+                var str_array = value.split(','); 
+                if(str_array.length>1){
+                  for(var i = 0; i < str_array.length; i++) {
+                     current[thisProp][index++] = str_array[i];
+                  }
+                } else {
+                  current[thisProp][index] = value;
+                }
             }
         } else {
             // Object case
@@ -417,7 +424,8 @@ utils.createEnv = function (app, newEnvId) {
             PORTAL_NETWORK_APIHOST: { value: '${LOCAL_IP}:8000' },
             PORTAL_NETWORK_PORTALHOST: { value: '${LOCAL_IP}:3000' },
             PORTAL_NETWORK_SCHEMA: { value: 'http' },
-            PORTAL_PORTAL_URL: { value: 'http://${LOCAL_IP}:3000' }
+            PORTAL_PORTAL_URL: { value: 'http://${LOCAL_IP}:3000' },
+            PORTAL_SESSIONSTORE_TYPE: { type: 'file' }
         };
     }
     fs.writeFileSync(envFileName, JSON.stringify(envDict, null, 2), 'utf8');
@@ -549,7 +557,7 @@ utils.prepareNewApi = function (app, apiId) {
         api: {
             upstream_url: "http://your.new.api/",
             name: apiId,
-            request_path: "/" + apiId
+            uris: "/" + apiId
         },
         plugins: []
     };
@@ -1043,9 +1051,9 @@ utils.createAuthServer = function (app, serverName) {
             api: {
                 name: serverName,
                 upstream_url: 'http://auth-server:3005',
-                request_path: '/auth-server',
+                uris: ['/auth-server'],
                 preserve_host: false,
-                strip_request_path: false,
+                strip_uri: false,
             },
             plugins: [
                 {
