@@ -104,6 +104,7 @@ router.post('/:serverId', function (req, res, next) {
     authServer.url = updatedInfo.url;
     authServer.urlDescription = updatedInfo.urlDescription;
     authServer.config = updatedInfo.config;
+    authServer.config.api.strip_uri = (!authServer.config.api.strip_uri) ? false : authServer.config.api.strip_uri;
 
     const pluginsArray = pluginUtils.makePluginsArray(body.plugins);
     authServer.config.plugins = pluginsArray;
