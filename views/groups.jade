@@ -22,8 +22,8 @@ mixin groupPanel(group, index)
                 .form-group
                     label Alternative IDs:
                     input(name='#{grp}.alt_ids' value='#{group.alt_ids}' type='string').form-control
-                    p.wicked-note Comma separated list of alternate IDs; if any of these are found in the ADFS groups, the user will be automatically assigned to this group. 
-                        
+                    p.wicked-note Comma separated list of alternate IDs; if any of these are found in the ADFS groups, the user will be automatically assigned to this group.
+
                 .checkbox
                     label
                         if group.adminGroup
@@ -31,6 +31,13 @@ mixin groupPanel(group, index)
                         else
                             input(name='#{grp}.adminGroup' type='checkbox')
                         | Admin Group
+                .checkbox
+                      label
+                        if group.approverGroup
+                            input(name='#{grp}.approverGroup' type='checkbox' checked='checked')
+                        else
+                            input(name='#{grp}.approverGroup' type='checkbox')
+                        | Approver Group
 
 block scripts
     script(type='text/javascript').
@@ -43,9 +50,9 @@ block content
     .jumbotron
         .container
             h1 Groups configuration
-            
+
             p Specify the user groups you need and want in your API portal. These can be used to restrict access to things like APIs or Content.
-    
+
     .container
         form(role='form' method='post' action='/groups')
 
@@ -54,7 +61,7 @@ block content
                 have validated their email addresses, or if they logged in via any of the federated authentication
                 means (ADFS, Google or Github). If you don't want the user to be auto assigned a group, specify
                 "&lt;none&gt;" here:
-            
+
             br
             .form-group
                 label Default Group for validated users:
@@ -66,7 +73,7 @@ block content
                         else
                             option= group.id
             br
-            
+
             input(type='hidden' id='__action', name='__action' value='none')
             input(type='hidden' id='__object', name='__object' value='none')
 
@@ -82,5 +89,5 @@ block content
                     td(style='text-align:right')
                         button(type='submit' onclick='setAction("addGroup");').btn.btn-success Add Group &raquo;
             br
-            
+
             +renderButtons('/groups', '/auth', '/plans')
