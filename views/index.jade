@@ -47,7 +47,7 @@ block content
   .container
     .row
       +section('users', kickstarter, 'Initial Users', 'Which users shall be created initially? You will need at least an Admin Account which can be used to transfer admin rights to your personal user.')
-      +section('auth', kickstarter, 'Authentication', 'Which authentication methods should the portal support? You can configure: Local, ADFS, Github and Google authentication.')
+      +section('auth', kickstarter, 'Authentication', 'Which authentication methods should the portal support? You can configure: Local, ADFS, Github, Google and Oauth2 authentication.')
       +section('groups', kickstarter, 'User Groups', 'Which user groups are needed? wicked supports user groups which can be used to configure access to APIs and Content. They can be linked to ADFS groups as well.')
   hr
   .container
@@ -67,5 +67,10 @@ block content
       +section('chatbot', kickstarter, 'Chatbot', 'wicked may integrate to IRC style chat systems which work like Slack; it has been tested with Slack and Rocket.Chat.')
       +section('templates', kickstarter, 'Templates', 'Specify templates for the mailer and the chatbot.')
       +section('design', kickstarter, 'Design', 'Which styles and design do you want to use? Portal main title and footer, a couple of colors and design elements are prepared for customization without actually changing the code. Configure it here.')
+    .row
+  hr
+  .container
+    .row
+      +section('kongAdapter', kickstarter, 'Kong Adapter', 'Do you want to configure Kong Adapter? The wicked can make use of Kong Adapter configuration to ignore syncing of specified plugins')
     .row
       .col-md-12 &nbsp;
