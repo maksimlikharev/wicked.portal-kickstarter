@@ -73,7 +73,7 @@ pluginUtils.makeViewModel = function (configPlugins) {
             useCors: false,
             name: "cors",
             config: {
-                origin: '*',
+                origins: '*',
                 methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
             }
         };
