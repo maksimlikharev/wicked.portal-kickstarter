@@ -10,7 +10,7 @@ mixin renderApi(api, i)
                     table(width='100%')
                         tr
                             td
-                                h4.panel-title 
+                                h4.panel-title
                                     a(data-target='#collapse_#{i}' data-toggle='collapse') #{api.name} &raquo;
                             td(style='text-align:right')
                                 if (api.deprecated)
@@ -34,7 +34,7 @@ mixin renderApi(api, i)
                                     option(selected) key-auth
                                     option oauth2
                             p.wicked-note Select <code>key-auth</code> for API Key authentication, or <code>oauth2</code> for OAuth 2.0. Implicit, Password and Authorization Code grants require an authorization server.
-                        
+
                         - var oauthSettingsClass = 'collapse panel-collapse'
                         if (api.auth && api.auth.startsWith('oauth2'))
                             - oauthSettingsClass = oauthSettingsClass + ' in'
@@ -57,7 +57,7 @@ mixin renderApi(api, i)
                                     +inputField2(apiName + 'settings.scopes', apis, 'Scopes:', 'string', 'Space-separated list of scopes.')
                                     +checkBox(apiName + 'settings.mandatory_scope', apis, '<b>Mandatory Scope:</b> If specified, it is not possible to create access tokens without explicitly specifying a scope. Otherwise an access token with an empty scope may be created.')
 
-                        +inputField2(apiName + 'tags', apis, 'Tags:', 'string', 'Comma-separated list of tags which apply to this API. Not yet used in portal.')
+                        +inputField2(apiName + 'tags', apis, 'Tags:', 'string', 'Comma-separated list of tags which apply to this API.')
 
                         .form-group
                             label Required User Group:
@@ -123,15 +123,15 @@ block content
     .jumbotron
         .container
             h1 API configuration
-            
+
             p Configure which APIs you want to expose via your API Portal
-    
+
     .container
         form(role='form' method='post' action='/apis' onsubmit='return confirmDelete();')
 
             input(type='hidden' id='__action', name='__action' value='none')
             input(type='hidden' id='__object', name='__object' value='none')
-            
+
             each anApi, i in apis
                 +renderApi(anApi, i)
 
@@ -149,6 +149,6 @@ block content
                             button(type='submit' onclick='setAction("addApi");').btn.btn-success Add API &raquo;
                 .col-md-2
                     | &nbsp;
-            
-            
+
+
             +renderButtons('/apis', '/plans', '/authservers')
