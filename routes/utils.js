@@ -426,7 +426,7 @@ utils.createEnv = function (app, newEnvId) {
             PORTAL_NETWORK_SCHEMA: { value: 'http' },
             PORTAL_PORTAL_URL: { value: 'http://${LOCAL_IP}:3000' },
             PORTAL_SESSIONSTORE_TYPE: { type: 'file' },
-            PORTAL_AUTHSERVER_URL: { value: 'http://${LOCAL_IP}:3005' },
+            PORTAL_AUTHSERVER_URL: { value: 'http://${LOCAL_IP}:3010' },
             PORTAL_KONG_OAUTH2_URL: { value: 'http://${LOCAL_IP}:3006' }
         };
     }
