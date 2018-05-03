@@ -17,7 +17,7 @@
     "mocha": "3.0.1",
     "morgan": "1.7.0",
     "mustache": "2.2.1",
-    "portal-env": "file:../portal-env.tgz",
+    "portal-env": "file:../portal-env-1.0.0.tgz",
     "request": "2.74.0",
     "serve-favicon": "2.3.0"
   },
