@@ -71,6 +71,9 @@ mixin renderApi(api, i)
                                         option(selected)= group.id
                                     else
                                         option= group.id
+                                        
+                        +checkBox(apiName + 'partner', apis, '<b>Partner API:</b> Check to mark it as a Partner API. Visitors will be able to see General Information about this API in API Catalog.')
+                                        
                         .panel.panel-default
                             .panel-heading
                                 table(width='100%')
