@@ -57,7 +57,7 @@ mixin renderApi(api, i)
                                     +inputField2(apiName + 'settings.scopes', apis, 'Scopes:', 'string', 'Space-separated list of scopes.')
                                     +checkBox(apiName + 'settings.mandatory_scope', apis, '<b>Mandatory Scope:</b> If specified, it is not possible to create access tokens without explicitly specifying a scope. Otherwise an access token with an empty scope may be created.')
 
-                        +inputField2(apiName + 'tags', apis, 'Tags:', 'string', 'Comma-separated list of tags which apply to this API. Not yet used in portal.')
+                        +inputField2(apiName + 'tags', apis, 'Tags:', 'string', 'Comma-separated list of tags which apply to this API. Appear on the main APIs page to enable filtering of APIs by Tag.')
 
                         .form-group
                             label Required User Group:
