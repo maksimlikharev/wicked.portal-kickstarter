@@ -2,24 +2,24 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "body-parser": "1.15.2",
+    "body-parser": "1.18.3",
     "bootstrap": "3.3.7",
     "chai": "3.5.0",
     "cookie-parser": "1.4.3",
-    "debug": "2.2.0",
-    "express": "4.15.3",
+    "debug": "3.1.0",
+    "express": "4.16.3",
     "fs-extra": "0.30.0",
     "highlight.js": "9.3.0",
     "jade": "1.11.0",
-    "jquery": "2.2.4",
+    "jquery": "3.3.1",
     "js-yaml": "3.6.0",
     "marked": "0.3.9",
-    "mocha": "3.0.1",
-    "morgan": "1.7.0",
+    "mocha": "5.2.0",
+    "morgan": "1.9.0",
     "mustache": "2.2.1",
     "portal-env": "file:../portal-env-1.0.0.tgz",
-    "request": "2.74.0",
-    "serve-favicon": "2.3.0"
+    "request": "2.87.0",
+    "serve-favicon": "2.5.0"
   },
   "scripts": {
     "start": "node ./bin/kickstart"
