@@ -1,3 +1,30 @@
+Vue.component('auth-server', {
+    props: ['value', 'envPrefix', 'serverId'],
+    methods: {
+        displayCallbackUris: function (event) {
+            displayCallbackUris(this.value.uri, event.id);
+        }
+    },
+    template: `
+        <div>
+            <auth-server-basic v-model="value" :env-prefix="envPrefix" />
+
+            <wicked-panel title="Auth Methods" type="primary" :open=true>
+                <p>Which authentication methods should this authorization server use? You may also specify identity provider
+                   specific settings, depending on the effect you want to achieve.</p>
+                
+                <auth-method v-for="(am, index) in value.authMethods" 
+                    v-model="value.authMethods[index]"
+                    v-on:display-callback-url="displayCallbackUris"
+                    :key="am.name" 
+                    :server-id="serverId" />
+
+                <add-auth-method v-model="value.authMethods" />
+            </wicked-panel>
+        </div>
+    `
+});
+
 Vue.component('auth-server-basic', {
     props: ['value', 'envPrefix'],
     template: `
@@ -11,12 +38,17 @@ Vue.component('auth-server-basic', {
 });
 
 Vue.component('auth-method', {
-    props: ['value', 'serverName'],
+    props: ['value', 'serverId'],
     data: function () {
-        const envPrefix = 'PORTAL_AUTHMETHOD_' + this.serverName.toUpperCase() + '_' + this.value.name.toUpperCase() + '_';
+        const envPrefix = 'PORTAL_AUTHMETHOD_' + this.serverId.toUpperCase() + '_' + this.value.name.toUpperCase() + '_';
         return {
             envPrefix: envPrefix
         };
+    },
+    methods: {
+        emitDisplayCallback: function () {
+            this.$emit('display-callback-url', { id: this.value.name, type: this.value.type });
+        }
     },
     template:
     `
@@ -37,14 +69,17 @@ Vue.component('auth-method', {
         <div v-else-if="value.type == 'google'">
             <wicked-input v-model="value.config.clientId" label="Google client ID:" hint="The Google client ID for the wicked API Portal" :env-var="envPrefix + 'CLIENTID'"/>
             <wicked-input v-model="value.config.clientSecret" label="Google client Secret:" hint="The Google client secret for the wicked API Portal" :env-var="envPrefix + 'CLIENTSECRET'"/>
+            <button v-on:click="emitDisplayCallback" class="btn btn-primary">Display Callback URLs</button>
         </div>
         <div v-else-if="value.type == 'github'">
             <wicked-input v-model="value.config.clientId" label="Github client ID:" hint="The Github client ID for the wicked API Portal" :env-var="envPrefix + 'CLIENTID'"/>
             <wicked-input v-model="value.config.clientSecret" label="Github client Secret:" hint="The Github client secret for the wicked API Portal" :env-var="envPrefix + 'CLIENTSECRET'"/>
+            <button v-on:click="emitDisplayCallback" class="btn btn-primary">Display Callback URLs</button>
         </div>
         <div v-else-if="value.type == 'twitter'">
             <wicked-input v-model="value.config.consumerKey" label="Twitter consumer key:" hint="The Twitter consumer key for the wicked API Portal" :env-var="envPrefix + 'CONSUMERKEY'" />
             <wicked-input v-model="value.config.consumerSecret" label="Twitter consumer secret:" hint="The Twitter consumer secret for the wicked API Portal" :env-var="envPrefix + 'CONSUMERSECRET'" />
+            <button v-on:click="emitDisplayCallback" class="btn btn-primary">Display Callback URLs</button>
         </div>
         <div v-else-if="value.type == 'oauth2'">
             <wicked-checkbox v-model="value.config.trustUsers" label="Trust user email addresses from this source (maps to <code>email_verified</code>)" />
@@ -63,6 +98,7 @@ Vue.component('auth-method', {
             <wicked-input v-model="value.config.emailField" label="JWT Claim: Email address:" hint="REQUIRED: The JWT claim containing the email address of the user (<code>email</code>)" :env-var="envPrefix + 'FIELD_EMAIL'" />
             <hr>
             <wicked-input v-model="value.config.params" textarea=true json=true label="Additional request parameters when authorizing (<code>&quot;key&quot;: &quot;value&quot;</code> maps to <code>?key=value</code> in the authorize request):" height="150px" :env-var="envPrefix + 'PARAMS'" />
+            <button v-on:click="emitDisplayCallback" class="btn btn-primary">Display Callback URLs</button>
         </div>
         <div v-else-if="value.type == 'adfs'">
             <wicked-checkbox v-model="value.config.trustUsers" label="Trust user email addresses from this source (maps to <code>email_verified</code>)" />
@@ -78,6 +114,7 @@ Vue.component('auth-method', {
             <wicked-input v-model="value.config.emailField" label="JWT Claim: Email address:" hint="REQUIRED: The JWT claim containing the email address of the user (<code>email</code>)" :env-var="envPrefix + 'FIELD_EMAIL'" />
             <hr>
             <wicked-input v-model="value.config.certificate" textarea=true label="ADFS JWT Signing Certificate:" height="200px" :env-var="envPrefix + 'CERTIFICATE'" />
+            <button v-on:click="emitDisplayCallback" class="btn btn-primary">Display Callback URLs</button>
         </div>
         <div v-else-if="value.type == 'saml'">
             <wicked-checkbox v-model="value.config.trustUsers" label="Trust user email addresses from this source (maps to <code>email_verified</code>)" />
@@ -242,5 +279,43 @@ function storeData() {
         alert('Could not store data, an error occurred.');
     }).done(function () {
         alert('Successfully stored data.');
+    });
+}
+
+function displayCallbackUris(uri, authMethodId) {
+    $.getJSON('/api/globals/hosts').fail(function() {
+        alert("Could not retrieve hosts from backend. Is it running?");
+    }).done(function(data) {
+        $('#modalTitle').text('Callbacks for ' + authMethodId);
+        let tabs = `<li class="active"><a data-toggle="tab" href="#tab_default">default</a></li>`;
+        let content = `
+            <div class="tab-pane fade in active" id="tab_default">
+                <div class="panel-content">
+                    <br>
+                    <input readonly class="form-control" value="${data.default.apiHost}${uri}/${authMethodId}/callback">
+                </div>
+            </div>`;
+        for (let e in data) {
+            if (e === 'default')
+                continue;
+            tabs += `<li><a data-toggle="tab" href="#tab_${e}">${e}</a></li>`;
+            content += `
+                <div class="tab-pane fade" id="tab_${e}">
+                    <div class="panel-content">
+                        <br>
+                        <input readonly class="form-control" value="${data[e].apiHost}${uri}/${authMethodId}/callback">
+                    </div>
+                </div>`;
+        }
+        $('#modalContent').html(`
+            <ul class="nav nav-tabs">
+                ${tabs}
+            </ul>
+      
+            <div class="tab-content">
+                ${content}
+            </div>
+          `);
+        $('#modalDialog').modal();
     });
 }

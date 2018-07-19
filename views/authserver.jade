@@ -14,15 +14,7 @@ block content
         div(id='authserverBase')
             -var envPrefix = 'PORTAL_AUTHSERVER_' + safeServerId.toUpperCase()
 
-            auth-server-basic(v-model="authServer" env-prefix="#{envPrefix}")
-
-            wicked-panel(title="Auth Methods" type="primary" open=true)
-                p.
-                    Which authentication methods should this authorization server use? You may also specify identity provider
-                    specific settings, depending on the effect you want to achieve.
-                auth-method(v-for="(am, index) in authServer.authMethods" v-model="authServer.authMethods[index]" v-bind:key="am.name" server-name="#{safeServerId}")
-
-                add-auth-method(v-model="authServer.authMethods")
+            auth-server(v-model="authServer" env-prefix="#{envPrefix}" server-id="#{safeServerId}")
             
             wicked-plugins(v-model="plugins" server-id='#{serverId}' disable-aws-lambda=true hint="This section is for configuring plugins for the Authorization Server. The Authorization Server is registered as an API with the API Gateway, and thus you may use the usual plugins for it.")
             br

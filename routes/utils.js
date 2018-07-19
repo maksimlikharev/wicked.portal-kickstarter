@@ -958,8 +958,8 @@ utils.createCert = function (app, glob, envDict, certsDir, envName, validDays) {
     const envDir = path.join(certsDir, envName);
     if (!fs.existsSync(envDir))
         fs.mkdirSync(envDir);
-    let portalHost = resolveHostByEnv(envDict, envName, glob.network.portalHost.trim());
-    let apiHost = resolveHostByEnv(envDict, envName, glob.network.apiHost.trim());
+    let portalHost = utils.resolveByEnv(envDict, envName, glob.network.portalHost.trim());
+    let apiHost = utils.resolveByEnv(envDict, envName, glob.network.apiHost.trim());
     let portalHostVarName = utils.resolveEnvVarName(glob.network.portalHost.trim(), 'PORTAL_NETWORK_PORTALHOST');
     let apiHostVarName = utils.resolveEnvVarName(glob.network.apiHost.trim(), 'PORTAL_NETWORK_APIHOST');
 
@@ -1010,16 +1010,16 @@ utils.resolveEnvVarName = function (hostName, defaultName) {
     return envVarName;
 };
 
-function resolveHostByEnv(envDict, envName, hostName) {
-    if (!hostName.startsWith('$'))
-        return hostName; // No env var here.
-    let envVarName = utils.resolveEnvVarName(hostName);
+utils.resolveByEnv = function (envDict, envName, varValue) {
+    if (!varValue.startsWith('$'))
+        return varValue; // No env var here.
+    let envVarName = utils.resolveEnvVarName(varValue);
     if (!envDict[envName])
         throw 'Unknown environment name: ' + envName;
     if (!envDict[envName][envVarName])
         throw 'Unknown env var used for host: ' + envVarName;
     return envDict[envName][envVarName].value;
-}
+};
 
 function getAuthServerDir(app) {
     const configDir = getConfigDir(app);
