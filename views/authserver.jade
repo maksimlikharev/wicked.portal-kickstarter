@@ -20,23 +20,19 @@ block content
                 p.
                     Which authentication methods should this authorization server use? You may also specify identity provider
                     specific settings, depending on the effect you want to achieve.
-                auth-method(v-for="(am, index) in authMethods" v-model="authMethods[index]" v-bind:key="am.name" server-name="#{safeServerId}")
+                auth-method(v-for="(am, index) in authServer.authMethods" v-model="authServer.authMethods[index]" v-bind:key="am.name" server-name="#{safeServerId}")
 
-                add-auth-method(v-model="authMethods")
+                add-auth-method(v-model="authServer.authMethods")
             
-            wicked-plugins(v-model="plugins" server-id='#{safeServerId}' disable-aws-lambda=true hint="This section is for configuring plugins for the Authorization Server. The Authorization Server is registered as an API with the API Gateway, and thus you may use the usual plugins for it.")
-                
-        
-        button(onclick='javascript:storeData()').btn.btn-primary Store Data
-        br
-        +renderButtons('/authservers/' + serverId, '/authservers', null, '&laquo; Save &amp; Return')
+            wicked-plugins(v-model="plugins" server-id='#{serverId}' disable-aws-lambda=true hint="This section is for configuring plugins for the Authorization Server. The Authorization Server is registered as an API with the API Gateway, and thus you may use the usual plugins for it.")
+            br
+            nav-buttons(return-link="/authservers")
 
 block afterScripts
     script(type="text/javascript").
         const injectedData = {
             serverId: "#{serverId}",
             safeServerId: "#{safeServerId}",
-            authMethods: !{JSON.stringify(authMethods)},
             authServer: !{JSON.stringify(authServer)},
             plugins: !{JSON.stringify(plugins)},
             glob: !{JSON.stringify(glob)}

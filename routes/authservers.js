@@ -8,8 +8,8 @@ var pluginUtils = require('./pluginUtils');
 
 router.get('/', function (req, res, next) {
     var glob = utils.loadGlobals(req.app);
-    var envVars = utils.loadEnvDict(req.app);
-    utils.mixinEnv(glob, envVars);
+    // var envVars = utils.loadEnvDict(req.app);
+    // utils.mixinEnv(glob, envVars);
 
     const authServerNames = utils.getAuthServers(req.app); // array of strings
 
@@ -19,14 +19,6 @@ router.get('/', function (req, res, next) {
             glob: glob,
             authServers: authServerNames
         });
-});
-
-router.post('/', function (req, res, next) {
-    var body = utils.jsonifyBody(req.body);
-    const serverName = body.servername;
-
-    utils.createAuthServer(req.app, serverName);
-    res.redirect('/authservers/' + serverName);
 });
 
 const knownProperties = {
@@ -70,43 +62,26 @@ function jsonifyObject(ob) {
     }
 }
 
-function unjsonifyObject(ob) {
-    for (let p in ob) {
-        const pt = typeof ob[p];
-        if (pt === 'object') {
-            unjsonifyObject(ob[p]);
-        } else if (pt === 'string') {
-            const v = ob[p];
-            if (v.startsWith('{') || v.startsWith('[')) {
-                try {
-                    const vv = JSON.parse(v);
-                    ob[p] = vv;
-                } catch (err) {
-                    // Don't do anything
-                }
-            }
-        }
-    }
-}
-
 router.get('/:serverId', function (req, res, next) {
     var glob = utils.loadGlobals(req.app);
     var envVars = utils.loadEnvDict(req.app);
     utils.mixinEnv(glob, envVars);
 
     const serverId = req.params.serverId;
-    const authServerInfo = utils.loadAuthServer(req.app, req.params.serverId);
     const safeServerId = utils.makeSafeId(serverId);
+    const authServer = utils.loadAuthServer(req.app, req.params.serverId);
+    if (authServer.config && authServer.config.api && authServer.config.api.uris && authServer.config.api.uris.length > 0)
+        authServer.uri = authServer.config.api.uris[0];
+    else
+        authServer.uri = '/auth'; // Default
+    
     let origPlugins = [];
-    if (authServerInfo.config && authServerInfo.config.plugins)
-        origPlugins = authServerInfo.config.plugins;
+    if (authServer.config && authServer.config.plugins)
+        origPlugins = authServer.config.plugins;
     const plugins = pluginUtils.makeViewModel(origPlugins);
-    const otherProperties = JSON.stringify(getUnknownProperties(authServerInfo), null, 2);
-    // console.log(otherProperties);
-    let authMethods = [];
-    if (authServerInfo.authMethods) {
-        authMethods = authServerInfo.authMethods;
-        jsonifyAuthMethods(authMethods);
+
+    if (authServer.authMethods) {
+        jsonifyAuthMethods(authServer.authMethods);
     }
     if (glob && glob.portal && glob.portal.authMethods) {
         // Mix in auth methods to auth methods here
@@ -124,7 +99,7 @@ router.get('/:serverId', function (req, res, next) {
                 continue;
             const amAuthMethodId = am.substring(splitPos + 1);
             console.log('Auth Method: ' + amAuthMethodId);
-            const authMethod = authMethods.find(a => a.name === amAuthMethodId); // jshint ignore:line
+            const authMethod = authServer.authMethods.find(a => a.name === amAuthMethodId); // jshint ignore:line
             if (!authMethod) {
                 console.warn(`Auth Method ${am} is configured for portal, but is unknown.`);
                 continue;
@@ -132,17 +107,14 @@ router.get('/:serverId', function (req, res, next) {
             authMethod.useForPortal = true;
         }
     }
-    // console.log(authMethods);
 
     const viewModel = {
         configPath: req.app.get('config_path'),
         glob: glob,
         serverId: serverId,
         safeServerId: safeServerId,
-        authServer: authServerInfo,
+        authServer: authServer,
         plugins: plugins,
-        authMethods: authMethods,
-        otherProperties: otherProperties
     };
 
     res.render('authserver', viewModel);
@@ -161,31 +133,23 @@ function mixinUnknownProperties(serverConfig, otherProperties) {
 router.post('/:serverId/api', function (req, res, next) {
     const body = utils.getJson(req.body);
     console.log(JSON.stringify(body, null, 2));
-    res.status(204).json({ message: 'OK' });
-});
-
-router.post('/:serverId', function (req, res, next) {
-    var redirect = req.body.redirect;
     const serverId = req.params.serverId;
-    console.log(req.body);
-    const body = utils.jsonifyBody(req.body);
     console.log(body);
 
     var glob = utils.loadGlobals(req.app);
 
-    const safeServerId = utils.makeSafeId(serverId);
     const authServer = utils.loadAuthServer(req.app, serverId);
-    const updatedInfo = body.authServer[safeServerId];
+    const updatedInfo = body.authServer;
     authServer.desc = updatedInfo.desc;
-    authServer.url = updatedInfo.url;
-    authServer.urlDescription = updatedInfo.urlDescription;
     authServer.config = updatedInfo.config;
     authServer.config.api.strip_uri = (!authServer.config.api.strip_uri) ? false : authServer.config.api.strip_uri;
+    authServer.config.api.uris = [authServer.uri];
+    delete authServer.uri;
 
     const pluginsArray = pluginUtils.makePluginsArray(body.plugins);
     authServer.config.plugins = pluginsArray;
 
-    const authMethods = body.authMethods;
+    const authMethods = body.authServer.authMethods;
     utils.unpackObjects(authMethods);
     authServer.authMethods = authMethods;
     // Throw out all auth methods from this auth server from globals
@@ -223,13 +187,10 @@ router.post('/:serverId', function (req, res, next) {
     console.log(JSON.stringify(authServer, null, 2));
     console.log('===========================');
 
-    const otherProperties = JSON.parse(body.otherProperties);
-    mixinUnknownProperties(authServer, otherProperties);
-
     utils.saveGlobals(req.app, glob);
     utils.saveAuthServer(req.app, serverId, authServer);
 
-    res.redirect(redirect);
+    res.status(204).json({ message: 'OK' });
 });
 
 module.exports = router;

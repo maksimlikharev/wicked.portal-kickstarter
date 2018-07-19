@@ -1,6 +1,6 @@
 'use strict';
 
-/* global alert, btoa, Vue, $ */
+/* global storeData, alert, btoa, Vue, $ */
 
 function randomId() {
     return '_' + Math.random().toString(36).substr(2, 9);
@@ -392,5 +392,42 @@ Vue.component('wicked-plugins', {
     
             </wicked-panel>
         </wicked-panel>
+    `
+});
+
+Vue.component('nav-buttons', {
+    props: ['hideHome', 'returnLink', 'nextLink', 'prevLink'],
+    data: function () {
+        const hasNext = !!this.nextLink;
+        const hasPrev = !!this.prevLink;
+        const hasReturn = !!this.returnLink;
+        const hideHomeLink = typeof this.hideHome !== 'undefined';
+        return {
+            hasNext: hasNext,
+            hasPrev: hasPrev,
+            hasReturn: hasReturn,
+            hideHomeLink: hideHomeLink
+        };
+    },
+    methods: {
+        storeData: function () {
+            // This has to be declared for each page
+            storeData();
+        }
+    },
+    template: `
+        <table width="100%">
+            <tr>
+                <td>
+                    <a v-if="hasReturn" class="btn btn-default" :href="returnLink">&laquo; Return</a>
+                    <a v-if="hasPrev" class="btn btn-default" :href="prevLink">&laquo; Previous</a>
+                </td>
+                <td style="text-align:right">
+                    <a v-if="!hideHomeLink" class="btn btn-default" href="/">Home</a>
+                    <button v-on:click="storeData" class="btn btn-primary">Save</button>
+                    <a v-if="hasNext" class="btn btn-default">Next &raquo;</a>
+                </td>
+            </tr>
+        </table>
     `
 });

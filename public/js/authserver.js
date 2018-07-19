@@ -4,7 +4,8 @@ Vue.component('auth-server-basic', {
     <wicked-panel title="Basic Configuration" type="primary" :open=true>
         <wicked-input v-model="value.id" label="Name:" readonly=true disallow-env-var=true />
         <wicked-input v-model="value.desc" label="Description:" :env-var="envPrefix + 'DESC'" hint="Friendly description of the Authorization Server. Displayed on the API description page for APIs using this Server." />
-        <wicked-input v-model="value.config.api.upstream_url" label="Upstream (backend) URL:" :env-var="envPrefix + '_UPSTREAM_URL'" />
+        <wicked-input v-model="value.config.api.upstream_url" label="Upstream (backend) URL:" :env-var="envPrefix + 'UPSTREAM_URL'" />
+        <wicked-input v-model="value.uri" label="URI:" hint="The API URI under which the Authorization Server should be reachable" />
     </wicked-panel>
     `
 });
@@ -237,7 +238,9 @@ function storeData() {
         url: `/authservers/${serverId}/api`,
         data: JSON.stringify(vm.$data),
         contentType: 'application/json'
+    }).fail(function() {
+        alert('Could not store data, an error occurred.');
     }).done(function () {
-        alert('Successfully stored data (THIS IS A LIE).');
+        alert('Successfully stored data.');
     });
 }
