@@ -6,39 +6,40 @@ var router = express.Router();
 var utils = require('./utils');
 
 router.get('/', function (req, res, next) {
-    var glob = utils.loadGlobals(req.app);
-    var envVars = utils.loadEnvDict(req.app);
-    utils.mixinEnv(glob, envVars);
+    res.redirect('/authservers');
+    // var glob = utils.loadGlobals(req.app);
+    // var envVars = utils.loadEnvDict(req.app);
+    // utils.mixinEnv(glob, envVars);
 
-    res.render('auth',
-        {
-            configPath: req.app.get('config_path'),
-            glob: glob
-        });
+    // res.render('auth',
+    //     {
+    //         configPath: req.app.get('config_path'),
+    //         glob: glob
+    //     });
 });
 
-router.post('/', function (req, res, next) {
-    var redirect = req.body.redirect;
+// router.post('/', function (req, res, next) {
+//     var redirect = req.body.redirect;
 
-    var body = utils.jsonifyBody(req.body);
+//     var body = utils.jsonifyBody(req.body);
 
-    var glob = utils.loadGlobals(req.app);
-    var envVars = utils.loadEnvDict(req.app);
-    glob.auth = body.glob.auth;
+//     var glob = utils.loadGlobals(req.app);
+//     var envVars = utils.loadEnvDict(req.app);
+//     glob.auth = body.glob.auth;
     
-    utils.mixoutEnv(glob, envVars);
-    console.log(glob);
-    console.log(envVars);
+//     utils.mixoutEnv(glob, envVars);
+//     console.log(glob);
+//     console.log(envVars);
 
-    utils.saveGlobals(req.app, glob);
-    utils.saveEnvDict(req.app, envVars, "default");
+//     utils.saveGlobals(req.app, glob);
+//     utils.saveEnvDict(req.app, envVars, "default");
 
-    // Write changes to Kickstarter.json
-    var kickstarter = utils.loadKickstarter(req.app);
-    kickstarter.auth = 3;
-    utils.saveKickstarter(req.app, kickstarter);
+//     // Write changes to Kickstarter.json
+//     var kickstarter = utils.loadKickstarter(req.app);
+//     kickstarter.auth = 3;
+//     utils.saveKickstarter(req.app, kickstarter);
 
-    res.redirect(redirect);
-});
+//     res.redirect(redirect);
+// });
 
 module.exports = router;

@@ -48,9 +48,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
-app.use('/js', express.static(path.join(__dirname, 'node_modules/jquery/dist')));
-app.use('/js/marked', express.static(path.join(__dirname, 'node_modules/marked')));
+app.use(express.static(path.join(__dirname, 'node_modules', 'bootstrap', 'dist')));
+app.use('/js', express.static(path.join(__dirname, 'node_modules', 'jquery', 'dist')));
+app.use('/js/marked', express.static(path.join(__dirname, 'node_modules', 'marked')));
+app.use('/js/vue', express.static(path.join(__dirname, 'node_modules', 'vue', 'dist')));
 
 app.use('/', routes);
 app.use('/ipconfig', ipconfig);
@@ -88,25 +89,25 @@ app.use(function(req, res, next) {
 
 // development error handler
 // will print stacktrace
-if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
-  });
-}
-
-// production error handler
-// no stacktraces leaked to user
 app.use(function(err, req, res, next) {
+  console.error(err);
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,
-    error: {}
+    error: err
   });
 });
+// }
+
+// // production error handler
+// // no stacktraces leaked to user
+// app.use(function(err, req, res, next) {
+//   res.status(err.status || 500);
+//   res.render('error', {
+//     message: err.message,
+//     error: {}
+//   });
+// });
 
 
 module.exports = app;

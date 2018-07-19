@@ -127,12 +127,12 @@ mixin checkBox(source, thisIsNotUsedButApparentlyJadeNeedsItSomebodyCanExplainPl
   - var inputValue = eval(source)
   .checkbox
     label
-      if inputValue
+      if inputValue && inputValue != 'false'
         input(name='#{inputId}' id='#{inputId}' checked='checked' type='checkbox')
-        | !{label}     
+        | !{label}
       else
         input(name='#{inputId}' id='#{inputId}' type='checkbox')
-        | !{label}     
+        | !{label}
 
 mixin checkPanel(source, thisIsNotUsedButApparentlyJadeNeedsItSomebodyCanExplainPlease, label)
   - var inputId = source
@@ -172,6 +172,8 @@ html
     link(rel='stylesheet', href='/css/bootstrap.min.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
     script(src='/js/jquery.min.js')
+    script(src='/js/vue/vue.js')
+    script(src='/js/kickstarter-components.js')
     
     script(type='text/javascript').
       function setRedirect(target) {
@@ -194,7 +196,19 @@ html
 
     block moreScripts
   body
-  
+    //- <!-- Modal -->
+    .modal.fade(id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true")
+      .modal-dialog(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title(id="modalTitle") Modal dialog
+            button(type="button" class="close" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            div(id="modalContent")
+          .modal-footer
+            button(type="button" data-dismiss="modal").btn.btn-secondary Close
+
     nav(class="navbar navbar-inverse navbar-fixed-top")
       .container
         .navbar-header

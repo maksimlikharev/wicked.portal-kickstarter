@@ -15,6 +15,12 @@ utils.makeError = function (statusCode, errorText) {
     return err;
 };
 
+utils.getJson = function (ob) {
+    if (ob instanceof String || typeof ob === "string")
+        return JSON.parse(ob);
+    return ob;
+};
+
 utils.jsonifyBody = function (reqBody) {
     var body = {};
     for (var prop in reqBody) {
@@ -69,6 +75,27 @@ function applyProperty(to, propName, value) {
         }
     }
 }
+
+utils.unpackObjects = (ob) => {
+    if (typeof ob !== 'object')
+        return;
+    for(let p in ob) {
+        const v = ob[p];
+        if (typeof v === 'string') {
+            if (v.startsWith('{') || v.startsWith('[')) {
+                try {
+                    const innerOb = JSON.parse(v);
+                    ob[p] = innerOb;
+                } catch (err) {
+                    console.error('Could not parse JSON string:');
+                    console.error(v);
+                }
+            }
+        } else if (typeof v === 'object') {
+            utils.unpackObjects(v);
+        }
+    }
+};
 
 utils.isString = function (ob) {
     if (ob instanceof String || typeof ob === "string")
