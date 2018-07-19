@@ -3,6 +3,22 @@ Vue.component('auth-server', {
     methods: {
         displayCallbackUris: function (event) {
             displayCallbackUris(this.value.uri, event.id);
+        },
+        deleteAuthMethod: function (event) {
+            if (confirm("Are you sure you want to delete this Auth Method? The Auth Method isn't permanently deleted until you save the page.")) {
+                const authMethodId = event.id;
+                let foundIndex = -1;
+                for (let i = 0; i < this.value.authMethods.length; ++i) {
+                    const am = this.value.authMethods[i];
+                    if (am.name === authMethodId) {
+                        foundIndex = i;
+                        break;
+                    }
+                }
+                if (foundIndex >= 0) {
+                    this.$delete(this.value.authMethods, foundIndex);
+                }
+            }
         }
     },
     template: `
@@ -16,6 +32,7 @@ Vue.component('auth-server', {
                 <auth-method v-for="(am, index) in value.authMethods" 
                     v-model="value.authMethods[index]"
                     v-on:display-callback-url="displayCallbackUris"
+                    v-on:delete-auth-method="deleteAuthMethod"
                     :key="am.name" 
                     :server-id="serverId" />
 
@@ -48,11 +65,19 @@ Vue.component('auth-method', {
     methods: {
         emitDisplayCallback: function () {
             this.$emit('display-callback-url', { id: this.value.name, type: this.value.type });
+        },
+        deleteAuthMethod: function () {
+            this.$emit('delete-auth-method', { id: this.value.name });
         }
     },
     template:
-    `
-    <wicked-panel :open=false :type="value.enabled ? 'success': 'warning'" :title="(value.useForPortal ? '✓ ' : '') + value.friendlyShort + ' (' + value.name + ', type ' + value.type + ')'">
+        `
+    <wicked-panel :open=false 
+                  :type="value.enabled ? 'success': 'warning'" 
+                  :title="(value.useForPortal ? '✓ ' : '') + value.friendlyShort + ' (' + value.name + ', type ' + value.type + ')'"
+                  :show-delete=true
+                  v-on:delete="deleteAuthMethod"
+    >
         <wicked-checkbox v-model="value.enabled" label="Enabled" />
         <wicked-checkbox v-model="value.useForPortal" label="Allow for Portal/wicked login" />
         <wicked-input v-model="value.type" label="Type:" :readonly=true />
@@ -275,7 +300,7 @@ function storeData() {
         url: `/authservers/${serverId}/api`,
         data: JSON.stringify(vm.$data),
         contentType: 'application/json'
-    }).fail(function() {
+    }).fail(function () {
         alert('Could not store data, an error occurred.');
     }).done(function () {
         alert('Successfully stored data.');
@@ -283,9 +308,9 @@ function storeData() {
 }
 
 function displayCallbackUris(uri, authMethodId) {
-    $.getJSON('/api/globals/hosts').fail(function() {
+    $.getJSON('/api/globals/hosts').fail(function () {
         alert("Could not retrieve hosts from backend. Is it running?");
-    }).done(function(data) {
+    }).done(function (data) {
         $('#modalTitle').text('Callbacks for ' + authMethodId);
         let tabs = `<li class="active"><a data-toggle="tab" href="#tab_default">default</a></li>`;
         let content = `

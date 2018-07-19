@@ -78,6 +78,10 @@ Vue.component('wicked-panel', {
         open: {
             type: Boolean,
             default: false
+        },
+        showDelete: {
+            type: Boolean,
+            default: false
         }
     },
     data: function () {
@@ -88,12 +92,27 @@ Vue.component('wicked-panel', {
             internalId: randomId()
         };
     },
+    methods: {
+        deleteClick: function () {
+            this.$emit('delete');
+        }
+    },
     template: `
         <div :class="'panel panel-' + type">
             <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a data-toggle="collapse" :href="'#' + internalId">{{ title + ' &#x21E9;' }}</a>
-                </h4>
+                <table width="100%">
+                    <tr>
+                        <td width="70%">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" :href="'#' + internalId">{{ title + ' &#x21E9;' }}</a>
+                            </h4>
+                        </td>
+                        <td style="text-align:right" width="30%">
+                            <button v-if="showDelete" v-on:click="deleteClick" style="text-align:right;" class="btn btn-sm btn-danger">Delete</button>
+                            <span v-if="!showDelete">&nbsp;</span>
+                        </td>
+                    </tr>
+                </table>
             </div>
             <div :id="internalId" :class="{ collapse: true, 'panel-collapse': true, in: isOpen }">
                 <div class="panel-body">
