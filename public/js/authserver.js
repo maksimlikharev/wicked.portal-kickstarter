@@ -289,24 +289,6 @@ function createDefaultConfig(authMethodType) {
     }
 }
 
-const vm = new Vue({
-    el: '#authserverBase',
-    data: injectedData
-});
-
-function storeData() {
-    const serverId = vm.serverId;
-    $.post({
-        url: `/authservers/${serverId}/api`,
-        data: JSON.stringify(vm.$data),
-        contentType: 'application/json'
-    }).fail(function () {
-        alert('Could not store data, an error occurred.');
-    }).done(function () {
-        alert('Successfully stored data.');
-    });
-}
-
 function displayCallbackUris(uri, authMethodId) {
     $.getJSON('/api/globals/hosts').fail(function () {
         alert("Could not retrieve hosts from backend. Is it running?");
@@ -342,5 +324,25 @@ function displayCallbackUris(uri, authMethodId) {
             </div>
           `);
         $('#modalDialog').modal();
+    });
+}
+
+// ==============================================================
+
+const vm = new Vue({
+    el: '#authserverBase',
+    data: injectedData
+});
+
+function storeData() {
+    const serverId = vm.serverId;
+    $.post({
+        url: `/authservers/${serverId}/api`,
+        data: JSON.stringify(vm.$data),
+        contentType: 'application/json'
+    }).fail(function () {
+        alert('Could not store data, an error occurred.');
+    }).done(function () {
+        alert('Successfully stored data.');
     });
 }

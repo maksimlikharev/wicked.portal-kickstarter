@@ -21,6 +21,7 @@ function showEnvVar(envVarNameIncludingDollar) {
                 <div class="panel-content">
                     <p></p>
                     <p>${data.envs['default'].defined ? '<code>' + data.envs['default'].value.value + '</code>' : '(undefined)'}</p>
+                    <p>${data.envs['default'].defined && data.envs['default'].value.encrypted ? 'This variable is encrypted at rest.' : ''}</p>
                     <p><a target="_blank" href="/envs/default">Open environment &quot;default&quot;</a>.</p>
                 </div>
             </div>`;
@@ -34,6 +35,7 @@ function showEnvVar(envVarNameIncludingDollar) {
                         <p></p>
                         <p>${data.envs[e].defined && data.envs[e].value.inherited ? 'Inherited from <code>default</code>.' : ''}</p>
                         <p>${data.envs[e].defined ? '<code>' + data.envs[e].value.value + '</code>' : '(undefined)'}</p>
+                        <p>${data.envs[e].defined && data.envs[e].value.encrypted ? 'This variable is encrypted at rest.' : ''}</p>
                         <p><a target="_blank" href="/envs/${e}">Open environment &quot;${e}&quot;</a>.</p>
                         </div>
                 </div>`;
@@ -51,15 +53,16 @@ function showEnvVar(envVarNameIncludingDollar) {
     });
 }
 
-function makeEnvVar(envVarName, value, callback) {
+function makeEnvVar(envVarName, value, encrypt, callback) {
     $.ajax({
         method: 'POST',
         url: '/api/envs/default',
-        data: {
+        contentType: 'application/json',
+        data: JSON.stringify({
             name: envVarName,
             value: value,
-            encrypted: true
-        }
+            encrypted: encrypt
+        })
     }).fail(function (err) {
         return callback(err);
     }).done(function () {
@@ -160,7 +163,19 @@ Vue.component('wicked-input', {
     methods: {
         makeVar: function (event) {
             const instance = this;
-            makeEnvVar(this.envVarName, this.value, function (err) {
+            makeEnvVar(this.envVarName, this.value, false, function (err) {
+                if (err) {
+                    alert('Could not create env var in environment "default": ' + err.message);
+                    console.error(err);
+                    return;
+                }
+                // Replace with env var name instead; this looks counterintuitive, but works.
+                instance.$emit('input', `\${${instance.envVarName}}`);
+            });
+        },
+        makeEncryptedVar: function (event) {
+            const instance = this;
+            makeEnvVar(this.envVarName, this.value, true, function (err) {
                 if (err) {
                     alert('Could not create env var in environment "default": ' + err.message);
                     console.error(err);
@@ -199,7 +214,19 @@ Vue.component('wicked-input', {
                     v-on:input="$emit('input', $event.target.value)"
                 >
                 <span class="input-group-btn">
-                    <button v-if="showEnvVar" class="btn btn-warning" v-on:click="makeVar">Make ENV var</button>
+                    <!-- <button v-if="showEnvVar" class="btn btn-warning" v-on:click="makeVar">Make ENV var</button> -->
+                    <div v-if="showEnvVar" class="dropdown">
+                        <button class="btn btn-warning dropdown-toggle" type="button" :id="internalId + '_dd'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Create ENV var
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" :aria-labelledby="internalId + '_dd'">
+                            <li><a v-on:click="makeVar" role="button">Create ENV variable</a></li>
+                            <li><a v-on:click="makeEncryptedVar" role="button">Create <b>encrypted</b> ENV variable</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li class="dropdown-header">Default env var name: {{ envVar }}</li>
+                        </ul>
+                    </div>
                     <button v-else-if="hasEnvVar" class="btn btn-success" v-on:click="showVar">Show ENV var</button>
                     <button v-else class="btn btn-default" v-on:click="showExplanation">?</button>
                 </span>
@@ -303,14 +330,14 @@ Vue.component('wicked-plugins', {
                 const envVarName = this.envPrefix + 'BASICAUTH';
 
                 const instance = this;
-                $.ajax({
-                    method: 'POST',
+                $.post({
                     url: '/api/envs/default',
-                    data: {
+                    contentType: 'application/json',
+                    data: JSON.stringify({
                         name: envVarName,
                         value: headerText,
                         encrypted: true
-                    }
+                    })
                 }).done(function () {
                     instance.addHeader('$' + envVarName);
                 });
@@ -414,15 +441,48 @@ Vue.component('wicked-plugins', {
     `
 });
 
+const mainPages = [
+    "envs",
+    "ipconfig",
+    "database",
+    "users",
+    "auth",
+    "groups",
+    "plans",
+    "apis",
+    "authservers",
+    "recaptcha",
+    "content",
+    "email",
+    "chatbot",
+    "templates",
+    "design",
+    "kongAdapter",
+    "deploy"
+];
+
 Vue.component('nav-buttons', {
-    props: ['hideHome', 'returnLink', 'nextLink', 'prevLink'],
+    props: ['hideHome', 'returnLink', 'next', 'prev', 'thisPage'],
     data: function () {
-        const hasNext = !!this.nextLink;
-        const hasPrev = !!this.prevLink;
+        let nextLink = this.next;
+        let prevLink = this.prev;
+        if (this.thisPage) {
+            const index = mainPages.findIndex(p => p === this.thisPage);
+            if (index >= 0) {
+                if (!nextLink && index < mainPages.length - 1)
+                    nextLink = '/' + mainPages[index + 1];
+                if (!prevLink && index > 0)
+                    prevLink = '/' + mainPages[index - 1];
+            }
+        }
+        const hasNext = !!nextLink;
+        const hasPrev = !!prevLink;
         const hasReturn = !!this.returnLink;
         const hideHomeLink = typeof this.hideHome !== 'undefined';
         return {
+            nextLink: nextLink,
             hasNext: hasNext,
+            prevLink: prevLink,
             hasPrev: hasPrev,
             hasReturn: hasReturn,
             hideHomeLink: hideHomeLink
@@ -444,9 +504,15 @@ Vue.component('nav-buttons', {
                 <td style="text-align:right">
                     <a v-if="!hideHomeLink" class="btn btn-default" href="/">Home</a>
                     <button v-on:click="storeData" class="btn btn-primary">Save</button>
-                    <a v-if="hasNext" class="btn btn-default">Next &raquo;</a>
+                    <a v-if="hasNext" class="btn btn-default" :href="nextLink">Next &raquo;</a>
                 </td>
             </tr>
         </table>
+    `
+});
+
+Vue.component('helm-chart', {
+    template: `
+        <a href="https://github.com/Haufe-Lexware/wicked.haufe.io/tree/master/wicked" target="_blank">Wicked Kubernetes Helm Chart</a>
     `
 });

@@ -42,7 +42,7 @@ block content
     .row
       +section('envs', kickstarter, 'Environments Configuration', 'The API Portal configuration is designed to be parametrized for different environments, such as Dev, Test and Prod.', 'env')
       +section('ipconfig', kickstarter, 'IP and DNS Configuration', 'This is needed in order to enable the API portal to correctly route the calls from Swagger UI to the API Gateway and back.')
-      +section('deploy', kickstarter, 'Deployment Configuration', 'Defining how you want to deploy your configuration, creating docker compose files etc. SSL options.')
+      +section('database', kickstarter, 'Database Configuration', 'Configure the databases which wicked and Kong are using (Postgres and Redis).')
   hr
   .container
     .row
@@ -72,5 +72,6 @@ block content
   .container
     .row
       +section('kongAdapter', kickstarter, 'Kong Adapter', 'Do you want to configure Kong Adapter? The wicked can make use of Kong Adapter configuration to ignore syncing of specified plugins')
+      +section('deploy', kickstarter, 'Deployment Configuration', 'Defining how you want to deploy your configuration, creating docker compose files etc. SSL options.')
     .row
       .col-md-12 &nbsp;

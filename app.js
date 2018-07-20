@@ -15,6 +15,7 @@ var design = require('./routes/design');
 var email = require('./routes/email');
 var groups = require('./routes/groups');
 var ipconfig = require('./routes/ipconfig');
+var database = require('./routes/database');
 var plans = require('./routes/plans');
 var recaptcha = require('./routes/recaptcha');
 var kongadapter = require('./routes/kongadapter');
@@ -55,6 +56,7 @@ app.use('/js/vue', express.static(path.join(__dirname, 'node_modules', 'vue', 'd
 
 app.use('/', routes);
 app.use('/ipconfig', ipconfig);
+app.use('/database', database);
 app.use('/deploy', deploy);
 app.use('/ssl', ssl);
 app.use('/users', users);
