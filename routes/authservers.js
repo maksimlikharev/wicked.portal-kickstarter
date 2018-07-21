@@ -12,6 +12,10 @@ router.get('/', function (req, res, next) {
     // utils.mixinEnv(glob, envVars);
 
     const authServerNames = utils.getAuthServers(req.app); // array of strings
+    if (authServerNames.length === 1) {
+        // If we only have one, redirect there directly
+        return res.redirect(`/authservers/${authServerNames[0]}`);
+    }
 
     res.render('authservers',
         {

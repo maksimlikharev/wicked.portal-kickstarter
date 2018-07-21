@@ -1,5 +1,8 @@
 extends layout_plugin
 
+block scripts
+    -var isVuePage = true
+
 block content
     .jumbotron
         .container
@@ -13,10 +16,11 @@ block content
 
         div(id='authserverBase')
             -var envPrefix = 'PORTAL_AUTHSERVER_' + safeServerId.toUpperCase()
+            -var envPrefixPlugins = envPrefix + '_PLUGINS_'
 
             auth-server(v-model="authServer" env-prefix="#{envPrefix}" server-id="#{safeServerId}")
             
-            wicked-plugins(v-model="plugins" server-id='#{serverId}' disable-aws-lambda=true hint="This section is for configuring plugins for the Authorization Server. The Authorization Server is registered as an API with the API Gateway, and thus you may use the usual plugins for it.")
+            wicked-plugins(v-model="plugins" env-prefix="#{envPrefixPlugins}" disable-aws-lambda=true hint="This section is for configuring plugins for the Authorization Server. The Authorization Server is registered as an API with the API Gateway, and thus you may use the usual plugins for it.")
             br
             nav-buttons(return-link="/authservers")
 

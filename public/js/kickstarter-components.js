@@ -1,6 +1,6 @@
 'use strict';
 
-/* global storeData, alert, btoa, Vue, $ */
+/* global storeData, marked, alert, btoa, Vue, $ */
 
 function randomId() {
     return '_' + Math.random().toString(36).substr(2, 9);
@@ -264,14 +264,66 @@ Vue.component('wicked-checkbox', {
     `
 });
 
-Vue.component('wicked-plugins', {
-    props: ['value', 'hint', 'serverId', 'disableAwsLambda', 'disableCors'],
+Vue.component('wicked-string-array', {
+    props: ['value', 'label', 'allow-empty'],
     data: function () {
-        const envPrefix = 'PORTAL_AUTHSERVER_' + this.serverId.toUpperCase() + '_PLUGINS_';
+        // Create a copy of the thing
+        const values = JSON.parse(JSON.stringify(this.value));
+        let allowEmptyArray = false;
+        if (this.allowEmpty) {
+            if (typeof this.allowEmpty !== 'boolean') {
+                alert('Use :allow-empty=<true|false> to pass in a boolean; defaulting to false');
+            } else {
+                allowEmptyArray = this.allowEmpty;
+            }
+        }
+        return {
+            allowEmptyArray: allowEmptyArray,
+            internalId: randomId(),
+            values: values
+        };
+    },
+    methods: {
+        updateValue: function (event) {
+            this.$emit('input', this.values);
+        },
+        addString: function (event) {
+            this.values.push('');
+            this.$emit('input', this.values);
+        },
+        deleteString: function (index) {
+            if (this.values.length <= 1 && !this.allowEmptyArray) {
+                alert('You cannot delete the last value. There must be at least one value.');
+                return;
+            }
+            this.values.splice(index, 1);
+            this.$emit('input', this.values);
+        }
+    },
+    template: `
+        <div>
+            <label>{{label}}</label>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div v-for="(s, index) in values" class="input-group" style="padding-bottom: 5px">
+                        <input v-on:input="updateValue" v-model="values[index]" class="form-control" />
+                        <span class="input-group-btn">
+                            <button v-on:click="deleteString(index)" :id="internalId + '.' + index" class="btn btn-danger" type="button"><span class="glyphicon glyphicon-remove"></span></button>
+                        </span>
+                    </div>
+                    <button v-on:click="addString" class="btn btn-success" type="button"><span class="glyphicon glyphicon-plus"></span></button>
+                </div>
+            </div>
+        </div>
+    `
+});
+
+Vue.component('wicked-plugins', {
+    props: ['value', 'hint', 'envPrefix', 'disableAwsLambda', 'disableCors'],
+    data: function () {
         const disableAwsLambda = typeof this.disableAwsLambda !== 'undefined';
         const disableCors = typeof this.disableCors !== 'undefined';
         return {
-            envPrefix: envPrefix,
             username: '',
             password: '',
             hideAwsLambda: disableAwsLambda,
@@ -508,6 +560,38 @@ Vue.component('nav-buttons', {
                 </td>
             </tr>
         </table>
+    `
+});
+
+Vue.component('wicked-markdown', {
+    props: ['value'],
+    data: function () {
+        return {
+            internalId: randomId(),
+            initialValue: marked(this.value)
+        };
+    },
+    methods: {
+        updateMarkdown: function (value) {
+            $('#' + this.internalId + '_markdown').html(marked(value));
+            this.$emit('input', value);
+        }
+    },
+    template: `
+        <div>
+            <div class="row">
+                <div class="col-md-6">
+                    <textarea :id="internalId" 
+                            class="form-control"
+                            :value="value"
+                            style="height:500px"
+                            v-on:input="updateMarkdown($event.target.value)">{{ value }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <div :id="internalId + '_markdown'"><span v-html="initialValue"></span></div>
+                </div>
+            </div>
+        </div>
     `
 });
 

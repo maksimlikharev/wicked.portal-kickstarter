@@ -638,11 +638,15 @@ function getSwaggerFileName(app, apiId) {
 
 utils.loadSwagger = function (app, apiId) {
     console.log('apiId: ' + apiId);
+    // Hmmm... what if this thing is not valid JSON?
     return JSON.parse(fs.readFileSync(getSwaggerFileName(app, apiId), 'utf8'));
 };
 
 utils.saveSwagger = function (app, apiId, swagger) {
-    fs.writeFileSync(getSwaggerFileName(app, apiId), JSON.stringify(swagger, null, 2), 'utf8');
+    if (typeof swagger == 'string')
+        fs.writeFileSync(getSwaggerFileName(app, apiId), swagger, 'utf8');
+    else
+        fs.writeFileSync(getSwaggerFileName(app, apiId), JSON.stringify(swagger, null, 2), 'utf8');
 };
 
 utils.loadApiDesc = function (app, apiId) {

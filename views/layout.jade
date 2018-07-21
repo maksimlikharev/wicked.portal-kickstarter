@@ -258,6 +258,10 @@ html
                   li
                     a(href='/kongadapter') Kong Adapter  
             ul.nav.navbar-nav.navbar-right
+              if isVuePage
+                li(style="padding-top:10px")
+                  button(onclick="storeData();" class="btn btn-primary") Save
+                  &nbsp;&nbsp;&nbsp;&nbsp;
               li
                 a(href='/shutdown' style='text-decoration:none' title='Shut down Kickstarter')
                   span(style='font-size:1.5em').glyphicon.glyphicon-off
