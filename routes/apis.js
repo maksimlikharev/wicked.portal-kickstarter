@@ -9,32 +9,12 @@ const pluginUtils = require('./pluginUtils');
 
 router.get('/', function (req, res, next) {
     const apis = utils.loadApis(req.app);
-    const plans = utils.loadPlans(req.app);
-    const groups = utils.loadGroups(req.app);
-    const authServers = utils.getAuthServers(req.app);
-    for (let i = 0; i < apis.apis.length; ++i) {
-        if (!apis.apis[i].authServers) {
-            apis.apis[i].authServers = {};
-        } else {
-            const obAuthServers = {};
-            for (let j = 0; j < apis.apis[i].authServers.length; ++j) {
-                const safeName = apis.apis[i].authServers[j].replace(/\-/g, '_');
-                obAuthServers[safeName] = true;
-            }
-            apis.apis[i].authServers = obAuthServers;
-        }
-    }
-    console.log(JSON.stringify(apis, null, 2));
-
     res.render('apis',
         {
             configPath: req.app.get('config_path'),
             envFile: req.app.get('env_file'),
             title: 'wicked - Kickstarter',
-            apis: apis.apis,
-            plans: plans.plans,
-            groups: groups.groups,
-            authServers: authServers
+            apis: apis.apis
         });
 });
 
@@ -135,6 +115,8 @@ router.get('/:apiId', function (req, res, next) {
     const thisApi = apis.apis.find(a => a.id === apiId);
     if (!thisApi.hasOwnProperty('requiredGroup'))
         thisApi.requiredGroup = '';
+    if (!thisApi.hasOwnProperty('registrationPool'))
+        thisApi.registrationPool = '';
     const config = utils.loadApiConfig(req.app, apiId);
     const plugins = pluginUtils.makeViewModel(config.plugins);
     const apiDesc = utils.loadApiDesc(req.app, apiId);
@@ -155,6 +137,7 @@ router.get('/:apiId', function (req, res, next) {
 
     const groups = utils.loadGroups(req.app);
     const plans = utils.loadPlans(req.app);
+    const pools = utils.loadPools(req.app);
 
     res.render('apisettings', {
         configPath: req.app.get('config_path'),
@@ -166,7 +149,8 @@ router.get('/:apiId', function (req, res, next) {
         swagger: apiSwagger,
         authMethods: authMethods,
         groups: groups,
-        plans: plans
+        plans: plans,
+        pools: pools
     });
 });
 
@@ -206,53 +190,5 @@ router.post('/:apiId/api', function (req, res, next) {
     utils.saveSwagger(req.app, apiId, swagger);
     res.json({ message: message });
 });
-
-/*
-router.get('/:apiId', function (req, res, next) {
-    var apiId = req.params.apiId;
-    var config = utils.loadApiConfig(req.app, apiId);
-    var envDict = utils.loadEnvDict(req.app);
-    //utils.mixinEnv(config.api, envVars);
-    utils.mixinEnv(config.api, envDict);
-    var apis = {};
-    var safeApiId = utils.makeSafeId(apiId);
-    apis[safeApiId] = { api: config.api };
-    var plugins = pluginUtils.makeViewModel(config.plugins);
-    console.log(JSON.stringify(plugins, null, 2));
-    res.render('apiconfig',
-        {
-            configPath: req.app.get('config_path'),
-            apiId: apiId,
-            safeApiId: safeApiId,
-            apis: apis,
-            plugins: plugins
-        });
-});
-*/
-
-// router.post('/:apiId', function (req, res, next) {
-//     const apiId = req.params.apiId;
-//     const redirect = req.body.redirect;
-//     const safeApiId = apiId.replace(/\-/g, '');
-
-//     const envVars = utils.loadEnvDict(req.app);
-
-//     const body = utils.jsonifyBody(req.body);
-
-//     const plugins = pluginUtils.makePluginsArray(body.plugins);
-//     //console.log(JSON.stringify(plugins, null, 2));
-
-//     const config = {
-//         api: body.apis[safeApiId].api,
-//         plugins: plugins
-//     };
-//     config.api.strip_uri = (!config.api.strip_uri) ? false : config.api.strip_uri;
-//     utils.mixoutEnv(config.api, envVars, 'PORTAL_APIS_' + safeApiId.toUpperCase());
-
-//     utils.saveApiConfig(req.app, apiId, config);
-//     utils.saveEnvDict(req.app, envVars, "default");
-
-//     res.redirect(redirect);
-// });
 
 module.exports = router;

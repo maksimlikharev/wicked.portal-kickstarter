@@ -400,7 +400,7 @@ Vue.component('wicked-plugins', {
         }
     },
     template: `
-        <wicked-panel title="Plugin Configuration" type="danger" :open=true>
+        <wicked-panel title="Plugin Configuration" type="primary" :open=true>
             <p>{{ hint }}</p>
             <wicked-panel title="Rate Limiting" :type="getPanelType(value.rate_limiting.useRateLimiting)">
                 <p>One of these fields must be filled (we won't check, but it will fail when deploying).

@@ -19,83 +19,7 @@ mixin renderApi(api, i)
                                     i Cannot delete API (not deprecated)
                 div(id='collapse_#{i}').collapse.panel-collapse
                     .panel-body
-                        - var apiName = 'apis[' + i + '].'
-                        +inputField2(apiName + 'id', apis, 'API ID:', 'string', 'The ID of the API; must only contain a-z, - and _.', 'readonly')
-                        +checkBox(apiName + 'deprecated', apis, '<b>Deprecated</b>: Tick this to disable new subscriptions to your API. This is the first thing you should do when you want to phase out usage of an API. Second thing is to delete all subscriptions (in the running Portal, while the API is deprecated), then you can delete the API.')
-                        +inputField2(apiName + 'name', apis, 'API Name:', 'string', 'Friendly name of the API')
-                        +inputField2(apiName + 'desc', apis, 'Short Description:', 'string', 'May contain Markdown')
-                        .form-group
-                            label Authentication Method:
-                            select(name='#{apiName}auth' id='auth#{i}' onchange='javascript:checkAuth(#{i});').form-control
-                                if "oauth2" == api.auth
-                                    option key-auth
-                                    option(selected) oauth2
-                                else
-                                    option(selected) key-auth
-                                    option oauth2
-                            p.wicked-note Select <code>key-auth</code> for API Key authentication, or <code>oauth2</code> for OAuth 2.0. Implicit, Password and Authorization Code grants require an authorization server.
-                        
-                        - var oauthSettingsClass = 'collapse panel-collapse'
-                        if (api.auth && api.auth.startsWith('oauth2'))
-                            - oauthSettingsClass = oauthSettingsClass + ' in'
-                        div(id='oauthSettings#{i}' class=oauthSettingsClass)
-                            .panel.panel-default
-                                .panel-heading
-                                    h4.panel-title OAuth 2.0 Settings
-                                .panel-body
-                                    label Supported Flows:
-                                    +checkBox(apiName + 'settings.enable_client_credentials', apis, '<b>Client Credentials</b> (two-legged, machine to machine)')
-                                    +checkBox(apiName + 'settings.enable_implicit_grant', apis, '<b>Implicit Grant</b> (three-legged, for e.g Single Page Applications/client side JavaScript)')
-                                    +checkBox(apiName + 'settings.enable_password_grant', apis, '<b>Resource Owner Password Grant</b> (three-legged, for e.g. native mobile Apps)')
-                                    +checkBox(apiName + 'settings.enable_authorization_code', apis, '<b>Authorization Code Grant</b> (three-legged, for APIs delegating access to user data)')
-                                    +inputField2(apiName + 'settings.token_expiration', apis, 'Token Expiration (seconds):')
-                                    .form-group
-                                        label Authorization Servers:
-                                        p Specify which Authorization Servers are allowed for Authorization of use of this API. This is not needed if you only plan to use the Client Credentials Flow. For all others, you will need an Authorization Server (which you have to implement).
-                                        for authS in authServers
-                                            +checkBox(apiName + 'authServers.' + authS.replace(/\-/g, '_'), apis, '<b>' + authS + '</b>')
-                                    +inputField2(apiName + 'settings.scopes', apis, 'Scopes:', 'string', 'Space-separated list of scopes.')
-                                    +checkBox(apiName + 'settings.mandatory_scope', apis, '<b>Mandatory Scope:</b> If specified, it is not possible to create access tokens without explicitly specifying a scope. Otherwise an access token with an empty scope may be created.')
-
-                        +inputField2(apiName + 'tags', apis, 'Tags:', 'string', 'Comma-separated list of tags which apply to this API. Appear on the main APIs page to enable filtering of APIs by Tag.')
-
-                        .form-group
-                            label Required User Group:
-                            select(name='#{apiName}requiredGroup').form-control
-                                if !api.requiredGroup
-                                    option(selected) &lt;none&gt;
-                                else
-                                    option &lt;none&gt;
-                                each group, j in groups
-                                    if group.id == api.requiredGroup
-                                        option(selected)= group.id
-                                    else
-                                        option= group.id
-                                        
-                        +checkBox(apiName + 'partner', apis, '<b>Partner API:</b> Check to mark it as a Partner API. Visitors will be able to see General Information about this API in API Catalog.')
-                                        
-                        .panel.panel-default
-                            .panel-heading
-                                table(width='100%')
-                                    tr
-                                        td
-                                            h4.panel-title
-                                                a(data-toggle='collapse' href='#apisubs#{i}') Subscription Plans &raquo;
-                                        td(style='text-align:right')
-                                            a(href='/plans').btn.btn-default Plans &raquo;
-                            div(id='apisubs#{i}').collapse.panel-collapse
-                                .panel-body
-                                    each plan, j in plans
-                                        .checkbox
-                                            label
-                                                if api.plans.find(function(p) { return p == plan.id; })
-                                                    input(type='checkbox' name='#{apiName}plans.#{plan.id}' checked='checked')
-                                                else
-                                                    input(type='checkbox' name='#{apiName}plans.#{plan.id}')
-                                                | #{plan.id} - #{plan.name}
-                        a(href='/apidesc/#{api.id}').btn.btn-info.btn-block API Long Description
-                        a(href='/swagger/#{api.id}').btn.btn-info.btn-block Swagger File
-                        a(href='/apis/#{api.id}').btn.btn-info.btn-block Kong Configuration
+                        a(href="/apis/#{api.id}" role="button").btn.btn-primary Configure API
         .col-md-2
             | &nbsp;
 
@@ -154,4 +78,4 @@ block content
                     | &nbsp;
             
             
-            +renderButtons('/apis', '/plans', '/authservers')
+            +renderButtons('/apis', '/pools', '/authservers')

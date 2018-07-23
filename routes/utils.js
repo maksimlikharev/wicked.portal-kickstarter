@@ -586,7 +586,9 @@ utils.prepareNewApi = function (app, apiId) {
         api: {
             upstream_url: "http://your.new.api/",
             name: apiId,
-            uris: "/" + apiId
+            uris: ["/" + apiId],
+            strip_uris: true,
+            preserve_host: false
         },
         plugins: []
     };
@@ -1123,7 +1125,6 @@ utils.loadPools = function (app) {
         const pool = JSON.parse(fs.readFileSync(path.join(poolsDir, poolFile), 'utf8'));
         pools[poolName] = pool;
     }
-    console.log(pools);
     return pools;
 };
 

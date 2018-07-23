@@ -17,7 +17,7 @@ block content
 
         div(id='vueBase')
             -var envPrefix = 'PORTAL_APIS_' + safeApiId.toUpperCase() + '_'
-            wicked-api(v-model="api" v-bind:auth-methods="authMethods" v-bind:groups="groups" v-bind:plans="plans" env-prefix="#{envPrefix}")
+            wicked-api(v-model="api" v-bind:auth-methods="authMethods" v-bind:groups="groups" v-bind:plans="plans" v-bind:pools="pools" env-prefix="#{envPrefix}")
             wicked-api-kong(v-model="config" env-prefix="#{envPrefix}")
             wicked-plugins(v-model="plugins" env-prefix="#{envPrefix}PLUGINS_")
             wicked-api-desc(v-model="desc" env-prefix="#{envPrefix}")
@@ -37,7 +37,8 @@ block afterScripts
             swagger: !{JSON.stringify(swagger)},
             authMethods: !{JSON.stringify(authMethods)},
             groups: !{JSON.stringify(groups)},
-            plans: !{JSON.stringify(plans)}
+            plans: !{JSON.stringify(plans)},
+            pools: !{JSON.stringify(pools)}
         };
 
     script(src='/js/apisettings.js')
