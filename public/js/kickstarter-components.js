@@ -127,16 +127,18 @@ Vue.component('wicked-panel', {
 });
 
 Vue.component('wicked-input', {
-    props: ['label', 'readonly', 'value', 'envVar', 'hint', 'textarea', 'json', 'height'],
+    props: ['label', 'readonly', 'number', 'value', 'envVar', 'hint', 'textarea', 'json', 'height'],
     data: function () {
         const isReadOnly = typeof this.readonly !== 'undefined';
         const isTextarea = typeof this.textarea !== 'undefined';
+        const isNumber = typeof this.number !== 'undefined';
         const isJson = typeof this.json !== 'undefined';
         const envVarName = typeof this.envVar === 'string' && this.envVar !== '' ? this.envVar : null;
         const textareaHeight = typeof this.height === 'string' && this.height !== '' ? this.height : '100px';
         return {
             internalId: randomId(),
             isReadOnly: isReadOnly,
+            isNumber: isNumber,
             isTextarea: isTextarea,
             textareaHeight: textareaHeight,
             isJson: isJson,
@@ -211,8 +213,7 @@ Vue.component('wicked-input', {
                     type="text"
                     :readonly=readonly
                     v-bind:value="value"
-                    v-on:input="$emit('input', $event.target.value)"
-                >
+                    v-on:input="$emit('input', $event.target.value)">
                 <span class="input-group-btn">
                     <!-- <button v-if="showEnvVar" class="btn btn-warning" v-on:click="makeVar">Make ENV var</button> -->
                     <div v-if="showEnvVar" class="dropdown">
@@ -501,6 +502,7 @@ const mainPages = [
     "auth",
     "groups",
     "plans",
+    "pools",
     "apis",
     "authservers",
     "recaptcha",

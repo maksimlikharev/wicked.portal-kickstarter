@@ -7,7 +7,7 @@
                 "name": "Debug Kickstarter",
                 "program": "${workspaceRoot}/bin/kickstart",
                 "args": [
-                    "/home/achim/workspace/wicked/wicked-config/"
+                    "../wicked-sample-config"
                 ]
             }
         ]

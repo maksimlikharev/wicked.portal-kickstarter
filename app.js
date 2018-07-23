@@ -30,6 +30,7 @@ var envs = require('./routes/envs');
 var ssl = require('./routes/ssl');
 var shutdown = require('./routes/shutdown');
 var authservers = require('./routes/authservers');
+var pools = require('./routes/pools');
 
 // API functions
 var api = require('./routes/api');
@@ -53,6 +54,7 @@ app.use(express.static(path.join(__dirname, 'node_modules', 'bootstrap', 'dist')
 app.use('/js', express.static(path.join(__dirname, 'node_modules', 'jquery', 'dist')));
 app.use('/js/marked', express.static(path.join(__dirname, 'node_modules', 'marked')));
 app.use('/js/vue', express.static(path.join(__dirname, 'node_modules', 'vue', 'dist')));
+app.use('/js/uiv', express.static(path.join(__dirname, 'node_modules', 'uiv', 'dist')));
 
 app.use('/', routes);
 app.use('/ipconfig', ipconfig);
@@ -76,6 +78,7 @@ app.use('/apidesc', apidesc);
 app.use('/editcontent', editcontent);
 app.use('/templates', templates);
 app.use('/envs', envs);
+app.use('/pools', pools);
 app.use('/shutdown', shutdown);
 
 app.use('/api', api);

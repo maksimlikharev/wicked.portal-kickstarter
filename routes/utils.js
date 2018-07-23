@@ -51,13 +51,13 @@ function applyProperty(to, propName, value) {
                 current = current[thisProp][index];
             } else {
                 //current[thisProp][index] = value;
-                var str_array = value.split(','); 
-                if(str_array.length>1){
-                  for(var j = 0; j < str_array.length; j++) {
-                     current[thisProp][index++] = str_array[j];
-                  }
+                var str_array = value.split(',');
+                if (str_array.length > 1) {
+                    for (var j = 0; j < str_array.length; j++) {
+                        current[thisProp][index++] = str_array[j];
+                    }
                 } else {
-                  current[thisProp][index] = value;
+                    current[thisProp][index] = value;
                 }
             }
         } else {
@@ -79,7 +79,7 @@ function applyProperty(to, propName, value) {
 utils.unpackObjects = (ob) => {
     if (typeof ob !== 'object')
         return;
-    for(let p in ob) {
+    for (let p in ob) {
         const v = ob[p];
         if (typeof v === 'string') {
             if (v.startsWith('{') || v.startsWith('[')) {
@@ -538,9 +538,9 @@ utils.loadApis = function (app) {
                 mandatory_scope: false
             };
         }
-//        if (!thisApi.authServers && authServers.length > 0) {
-//            thisApi.authServer = authServers[0];
-//        }
+        //        if (!thisApi.authServers && authServers.length > 0) {
+        //            thisApi.authServer = authServers[0];
+        //        }
     }
     return apis;
 };
@@ -1101,6 +1101,47 @@ utils.createAuthServer = function (app, serverName) {
         },
     };
     utils.saveAuthServer(app, serverName, serverInfo);
+};
+
+function getPoolsDir(app) {
+    const configDir = getConfigDir(app);
+    const poolsDir = path.join(configDir, 'pools');
+    if (!fs.existsSync(poolsDir))
+        fs.mkdirSync(poolsDir);
+    return poolsDir;
+}
+
+utils.loadPools = function (app) {
+    const poolsDir = getPoolsDir(app);
+    const poolFiles = fs.readdirSync(poolsDir);
+    const pools = {};
+    for (let i = 0; i < poolFiles.length; ++i) {
+        const poolFile = poolFiles[i];
+        if (!poolFile.endsWith('.json'))
+            continue;
+        const poolName = poolFile.substring(0, poolFile.length - 5).toLowerCase(); // strip .json
+        const pool = JSON.parse(fs.readFileSync(path.join(poolsDir, poolFile), 'utf8'));
+        pools[poolName] = pool;
+    }
+    console.log(pools);
+    return pools;
+};
+
+utils.savePools = function (app, pools) {
+    const poolsDir = getPoolsDir(app);
+    // First delete all .json files...
+    const poolFiles = fs.readdirSync(poolsDir);
+    for (let i = 0; i < poolFiles.length; ++i) {
+        const poolFile = poolFiles[i];
+        if (!poolFile.endsWith('.json'))
+            continue;
+        fs.unlinkSync(path.join(poolsDir, poolFile));
+    }
+    // Then write them.
+    for (let poolName in pools) {
+        const poolFile = poolName.toLowerCase() + '.json';
+        fs.writeFileSync(path.join(poolsDir, poolFile), JSON.stringify(pools[poolName], null, 2), 'utf8');
+    }
 };
 
 utils.makeSafeId = function (unsafeId) {

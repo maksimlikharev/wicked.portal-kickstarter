@@ -20,6 +20,7 @@
     "portal-env": "file:../portal-env-1.0.0.tgz",
     "request": "2.87.0",
     "serve-favicon": "2.5.0",
+    "uiv": "0.25.0",
     "vue": "2.5.16"
   },
   "scripts": {
