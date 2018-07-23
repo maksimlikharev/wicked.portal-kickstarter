@@ -587,7 +587,7 @@ utils.prepareNewApi = function (app, apiId) {
             upstream_url: "http://your.new.api/",
             name: apiId,
             uris: ["/" + apiId],
-            strip_uris: true,
+            strip_uri: true,
             preserve_host: false
         },
         plugins: []
