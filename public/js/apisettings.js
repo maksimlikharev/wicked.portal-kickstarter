@@ -1,5 +1,32 @@
 Vue.component('wicked-api', {
     props: ['value', 'authMethods', 'groups', 'plans', 'pools', 'envPrefix'],
+    data: function () {
+        return {
+            newScopeId: '',
+            newScopeDesc: ''
+        };
+    },
+    methods: {
+        deleteScope: function (scopeId) {
+            this.$delete(this.value.settings.scopes, scopeId);
+        },
+        addScope: function (scopeId, scopeDesc) {
+            if (!this.isValidScopeId(scopeId)) {
+                alert('Scope ID is invalid.');
+                return;
+            }
+            this.$set(this.value.settings.scopes, scopeId, { description: scopeDesc });
+            this.newScopeId = '';
+            this.newScopeDesc = '';
+            $('#new_scope_input').focus();
+        },
+        isValidScopeId: function (scopeId) {
+            return /^[a-z0-9-_\:]+$/.test(scopeId);
+        },
+        focusDescription: function () {
+            $('#new_scope_desc').focus();
+        }
+    },
     template: `
     <wicked-panel :open=true title="Basic Configuration" type="primary">
         <wicked-input v-model="value.id" :readonly=true label="API ID:" hint="The ID of the API; must only contain a-z, - and _." />
@@ -54,13 +81,47 @@ Vue.component('wicked-api', {
             <wicked-checkbox v-model="value.settings.enable_password_grant" label="<b>Resource Owner Password Grant</b> (three-legged, for e.g. native mobile Apps)" />
             <wicked-checkbox v-model="value.settings.enable_authorization_code" label="<b>Authorization Code Grant</b> (three-legged, for APIs delegating access to user data)" />
             <wicked-input v-model="value.settings.token_expiration" label="Token Expiration (seconds):" />
-            <wicked-input v-model="value.settings.scopes" label="Scopes:" hint="Space-separated list of scopes." :env-var="envPrefix + 'SCOPES'" />
-            <wicked-checkbox v-model="value.settings.mandatory_scope" label="<b>Mandatory Scope:</b> If specified, it is not possible to create access tokens without explicitly specifying a scope. Otherwise an access token with an empty scope may be created." />
-            <hr>
-            <p>It is possible to delegate the scope decision from the end user to a third party instance; specify
-               the URL, as reachable from the Authorization Server instance inside your deployment, to the endpoint
-               which accepts a POST with the desired scope and profile of the user (TODO: Link to documentation).</p>
-            <wicked-input v-model="value.passthroughScopeUrl" label="Passthrough Scope URL:" :env-var="envPrefix + 'SCOPE_URL'" />
+            <!-- <wicked-input v-model="value.settings.scopes" label="Scopes:" hint="Space-separated list of scopes." :env-var="envPrefix + 'SCOPES'" /> -->
+            <wicked-panel title="API Scopes" type="default">
+                <wicked-checkbox v-model="value.settings.mandatory_scope" label="<b>Mandatory Scope:</b> If specified, it is not possible to create access tokens without explicitly specifying a scope. Otherwise an access token with an empty scope may be created." />
+                <p>You can either specify a static list of scopes, or you can look the scopes up using a service (which you need to implement).
+                   In case the scope lookup URL (below) is specified, the static list is <b>not</b> used.</p>
+                <wicked-input v-model="value.scopeLookupUrl" label="Scope lookup URL:" hint="URL as reachable from the portal API deployment, which by a GET can retrieve a list of scopes. See TODO for a specification of the necessary format." :env-var="envPrefix + 'SCOPE_LOOKUP_URL'" />
+
+                <p>It is possible to delegate the scope decision from the end user to a third party instance; specify
+                   the URL, as reachable from the Authorization Server instance inside your deployment, to the endpoint
+                   which accepts a POST with the desired scope and profile of the user (TODO: Link to documentation).</p>
+                <wicked-input v-model="value.passthroughScopeUrl" label="Passthrough Scope URL:" :env-var="envPrefix + 'SCOPE_URL'" />
+ 
+                <table style="border-spacing: 5px; width: 100%">
+                    <tr>
+                        <th class="scopecell">Scope ID</th>
+                        <th class="scopecell">Description</th>
+                        <th class="scopecell">Action</th>
+                    </tr>
+
+                    <tr v-for="(scopeDesc, scopeId) in value.settings.scopes">
+                        <td class="scopecell" style="width: 30%"><input class="form-control" :readonly=true :value="scopeId" /></td>
+                        <td class="scopecell" style="width: 55%"><input class="form-control" v-model="value.settings.scopes[scopeId].description" /></td>
+                        <td class="scopecell" style="width: 15%"><button role="button" v-on:click="deleteScope(scopeId)" class="btn btn-sm btn-danger">Remove</button></td>
+                    </tr>
+
+                    <tr>
+                        <td class="scopecell"><input class="form-control" id="new_scope_input" v-on:keyup.enter="focusDescription" v-model="newScopeId" /></td>
+                        <td class="scopecell"><input class="form-control" id="new_scope_desc" v-model="newScopeDesc" v-on:keyup.enter="addScope(newScopeId, newScopeDesc)" /></td>
+                        <td class="scopecell"><button role="button" v-on:click="addScope(newScopeId, newScopeDesc)" class="btn btn-sm btn-success" :disabled="newScopeId === '' || !isValidScopeId(newScopeId)">Add</button></td>
+                    </tr>
+
+                    <tr>
+                        <td class="scopecell"><p class="wicked-note">{{ newScopeId !== '' && !isValidScopeId(newScopeId) ? 'Scope invalid, can only contain a-z, 0-9, -, _ and :' : '' }}</p></td>
+                        <td class="scopecell"></td>
+                        <td class="scopecell"</td>
+                    </tr>
+                </table>
+
+                <p>You can use the enter key to jump between the scope ID and description, and to store the new scope; just press the enter key when inside the description field.</p>
+
+            </wicked-panel>
             <hr>
             <wicked-checkbox v-model="value.passthroughUsers" label="<b>Passthrough Users</b>: If you check this check box, wicked will not persist any users in its internal user database, but simply pass on the <code>sub</code> as authenticated user id to the backend API. Specifically useful in combination with the above &quot;passthrough scope&quot; option." />
             <hr>

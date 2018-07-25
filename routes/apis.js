@@ -117,6 +117,7 @@ router.get('/:apiId', function (req, res, next) {
         thisApi.requiredGroup = '';
     if (!thisApi.hasOwnProperty('registrationPool'))
         thisApi.registrationPool = '';
+    console.log(thisApi);
     const config = utils.loadApiConfig(req.app, apiId);
     const plugins = pluginUtils.makeViewModel(config.plugins);
     const apiDesc = utils.loadApiDesc(req.app, apiId);

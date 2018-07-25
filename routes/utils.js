@@ -525,11 +525,6 @@ utils.loadApis = function (app) {
     const authServers = utils.getAuthServers(app);
     for (let i = 0; i < apis.apis.length; ++i) {
         const thisApi = apis.apis[i];
-        if (thisApi.settings && thisApi.settings.scopes && Array.isArray(thisApi.settings.scopes)) {
-            thisApi.settings.scopes = thisApi.settings.scopes.join(' ');
-        } else if (thisApi.settings) {
-            thisApi.settings.scopes = '';
-        }
         // Fubble some defaults.
         if (!thisApi.settings) {
             thisApi.settings = {
@@ -538,9 +533,6 @@ utils.loadApis = function (app) {
                 mandatory_scope: false
             };
         }
-        //        if (!thisApi.authServers && authServers.length > 0) {
-        //            thisApi.authServer = authServers[0];
-        //        }
     }
     return apis;
 };
@@ -548,15 +540,7 @@ utils.loadApis = function (app) {
 utils.saveApis = function (app, apis) {
     for (let i = 0; i < apis.apis.length; ++i) {
         const thisApi = apis.apis[i];
-        if (thisApi.auth == 'oauth2') {
-            if (thisApi.settings && thisApi.settings.scopes && utils.isString(thisApi.settings.scopes)) {
-                const scopesString = thisApi.settings.scopes.trim();
-                if (scopesString && scopesString !== '')
-                    thisApi.settings.scopes = scopesString.split(' ');
-                else
-                    thisApi.settings.scopes = [];
-            }
-        } else if (thisApi.auth == 'key-auth') {
+        if (thisApi.auth == 'key-auth') {
             if (thisApi.hasOwnProperty('settings'))
                 delete thisApi.settings;
             if (thisApi.hasOwnProperty('authServers'))

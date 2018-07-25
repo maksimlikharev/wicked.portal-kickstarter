@@ -31,3 +31,7 @@ textarea {
   height: 70px;
   background-color: #f5f5f5;
 }
+
+.scopecell {
+  padding: 2px;
+}
