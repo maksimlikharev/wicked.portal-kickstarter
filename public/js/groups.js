@@ -43,6 +43,8 @@ Vue.component('wicked-groups', {
             this.selectedIndex = this.value.groups.length - 1;
         },
         deleteGroup: function (groupIndex) {
+            if (groupIndex >= this.value.groups.length - 1)
+                this.selectedIndex = this.value.groups.length - 2;
             this.value.groups.splice(groupIndex, 1);
         }
     },
