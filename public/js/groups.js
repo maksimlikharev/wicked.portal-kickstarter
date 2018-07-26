@@ -10,6 +10,7 @@ Vue.component('wicked-default-group', {
         have validated their email addresses, or if they logged in via any of the federated authentication
         means (ADFS, Google or Github). If you don't want the user to be auto assigned a group, specify
         "&lt;none&gt;" here:</p>
+        <label>Group automatically assigned to users with a verified email address:</label>
         <wicked-group-picker v-model="value.validatedUserGroup" :groups="groups" :include-none=true />
     </div>
     `
@@ -28,6 +29,9 @@ Vue.component('wicked-groups', {
         },
         selectGroup: function (index) {
             this.selectedIndex = index; 
+        },
+        isValidGroupId: function (groupId) {
+            return /^[a-z0-9_-]+$/.test(groupId);
         },
         addGroup: function () {
             this.value.groups.push({
@@ -49,7 +53,7 @@ Vue.component('wicked-groups', {
                 <div v-for="(group, index) in value.groups">
                     <div class="btn-group btn-group-justified" style="width:100%">
                         <a role="button" v-on:click="selectGroup(index)" style="width:85%" :class="{ btn: true, 'btn-lg': true, 'btn-primary': isSelected(index), 'btn-default': !isSelected(index) }">{{ group.name }} ({{ group.id }})</a>
-                        <a role="button" v-on:click="deleteGroup(index)" style="width:15%" class="btn btn-lg btn-danger"><span class="glyphicon glyphicon-remove"></span></a>
+                        <a v-if="group.id !== 'admin'" role="button" v-on:click="deleteGroup(index)" style="width:15%" class="btn btn-lg btn-danger"><span class="glyphicon glyphicon-remove"></span></a>
                     </div>
                     <div style="height:10px"></div>
                 </div>
@@ -58,7 +62,8 @@ Vue.component('wicked-groups', {
         </div>
         <div class="col-md-8">
             <wicked-panel type="primary" :collapsible=false :title="value.groups[selectedIndex].name">
-                <wicked-input v-model="value.groups[selectedIndex].id" label="Group ID:" hint="Must only contain a-z, 0-9, - and _ characters." />
+                <wicked-input v-model="value.groups[selectedIndex].id" :readonly="value.groups[selectedIndex].id === 'admin'" label="Group ID:" hint="Must only contain a-z, 0-9, - and _ characters." />
+                <p v-if="!isValidGroupId(value.groups[selectedIndex].id)" class="wicked-note" style="color:red">The group ID is not valid.</p>
                 <wicked-input v-model="value.groups[selectedIndex].name" label="Group Name:" />
 
                 <wicked-checkbox v-model="value.groups[selectedIndex].adminGroup" label="<b>Admin Group:</b> Members of this group will have Administrator rights inside the wicked Portal." />
@@ -66,6 +71,9 @@ Vue.component('wicked-groups', {
 
                 <p class="wicked-note"><b>Note:</b> If you are looking for the ADFS group mapping for groups, this has been moved to the &quot;right&quot; place, in
                   the configuration of the <a href="/authservers">authorization servers</a>, in case you have specified an ADFS auth method.</p>
+
+                <p v-if="value.groups[selectedIndex].id === 'admin'" class="wicked-note"><b>Note:</b> The <code>admin</code> group cannot be renamed or deleted. 
+                  You may add additional groups with admin rights, but the main group must remain in the configuration.</p>
             </wicked-panel>
         </div>
     </div>
