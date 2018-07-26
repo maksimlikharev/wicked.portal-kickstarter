@@ -85,12 +85,18 @@ Vue.component('wicked-panel', {
         showDelete: {
             type: Boolean,
             default: false
+        },
+        collapsible: {
+            type: Boolean,
+            default: true
         }
     },
     data: function () {
         // alert('open: ' + this.open + '( ' + this.title + ')');
-        const isOpen = this.open;
+        const isCollapsible = this.collapsible;
+        const isOpen = this.open || !isCollapsible;
         return {
+            isCollapsible: isCollapsible,
             isOpen: isOpen,
             internalId: randomId()
         };
@@ -107,7 +113,8 @@ Vue.component('wicked-panel', {
                     <tr>
                         <td width="70%">
                             <h4 class="panel-title">
-                                <a data-toggle="collapse" :href="'#' + internalId">{{ title + ' &#x21E9;' }}</a>
+                                <a v-if="isCollapsible" data-toggle="collapse" :href="'#' + internalId">{{ title + ' &#x21E9;' }}</a>
+                                <span v-if="!isCollapsible">{{ title }}</span>
                             </h4>
                         </td>
                         <td style="text-align:right" width="30%">
