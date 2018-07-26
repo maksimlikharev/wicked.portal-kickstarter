@@ -1,5 +1,5 @@
 Vue.component('auth-server', {
-    props: ['value', 'envPrefix', 'serverId'],
+    props: ['value', 'envPrefix', 'serverId', 'groups'],
     methods: {
         displayCallbackUris: function (event) {
             displayCallbackUris(this.value.uri, event.id);
@@ -34,7 +34,8 @@ Vue.component('auth-server', {
                     v-on:display-callback-url="displayCallbackUris"
                     v-on:delete-auth-method="deleteAuthMethod"
                     :key="am.name" 
-                    :server-id="serverId" />
+                    :server-id="serverId"
+                    :groups="groups" />
 
                 <add-auth-method v-model="value.authMethods" />
             </wicked-panel>
@@ -55,11 +56,13 @@ Vue.component('auth-server-basic', {
 });
 
 Vue.component('auth-method', {
-    props: ['value', 'serverId'],
+    props: ['value', 'serverId', 'groups'],
     data: function () {
         const envPrefix = 'PORTAL_AUTHMETHOD_' + this.serverId.toUpperCase() + '_' + this.value.name.toUpperCase() + '_';
         return {
-            envPrefix: envPrefix
+            envPrefix: envPrefix,
+            newAdfsGroup: '',
+            newWickedGroup: ''
         };
     },
     methods: {
@@ -68,6 +71,14 @@ Vue.component('auth-method', {
         },
         deleteAuthMethod: function () {
             this.$emit('delete-auth-method', { id: this.value.name });
+        },
+        deleteGroupMapping: function (adfsGroup) {
+            this.$delete(this.value.config.defaultGroups, adfsGroup);
+        },
+        addGroupMapping: function(adfsGroup, wickedGroup) {
+            this.newAdfsGroup = '';
+            this.newWickedGroup = '';
+            this.$set(this.value.config.defaultGroups, adfsGroup, wickedGroup);
         }
     },
     template:
@@ -139,6 +150,30 @@ Vue.component('auth-method', {
             <wicked-input v-model="value.config.emailField" label="JWT Claim: Email address:" hint="REQUIRED: The JWT claim containing the email address of the user (<code>email</code>)" :env-var="envPrefix + 'FIELD_EMAIL'" />
             <hr>
             <wicked-input v-model="value.config.certificate" textarea=true label="ADFS JWT Signing Certificate:" height="200px" :env-var="envPrefix + 'CERTIFICATE'" />
+            <wicked-panel type="default" title="ADFS Group Mapping">
+                <p>You can map ADFS groups to wicked user groups here. To use this feature, specify a group field mapping here, which is expected to contain a JSON array of
+                strings (group names).</p>
+                <wicked-input v-model="value.config.groupField" label="JWT Claim: Groups:" hint="Defaults to <code>group</code> if not specified." :env-var="envPrefix + 'FIELD_GROUPS'" />
+                <table width="100%">
+                    <tr>
+                        <th class="scopecell">ADFS Group</th>
+                        <th class="scopecell">Wicked Group</th>
+                        <th class="scopecell">Action</th>
+                    </tr>
+
+                    <tr v-for="(wickedGroup, adfsGroup) in value.config.defaultGroups">
+                        <td class="scopecell" style="width: 30%"><input class="form-control" :readonly=true :value="adfsGroup" /></td>
+                        <td class="scopecell" style="width: 55%"><wicked-group-picker v-model="value.config.defaultGroups[adfsGroup]" :groups="groups"/></td>
+                        <td class="scopecell" style="width: 15%"><button role="button" v-on:click="deleteGroupMapping(adfsGroup)" class="btn btn-sm btn-danger">Remove</button></td>
+                    </tr>
+
+                    <tr>
+                        <td class="scopecell"><input class="form-control" id="new_adfs_group" v-model="newAdfsGroup" /></td>
+                        <td class="scopecell"><wicked-group-picker v-model="newWickedGroup" :groups="groups" :include-none=true /></td>
+                        <td class="scopecell"><button role="button" v-on:click="addGroupMapping(newAdfsGroup, newWickedGroup)" class="btn btn-sm btn-success" :disabled="newAdfsGroup === '' || !newWickedGroup">Add</button></td>
+                    </tr>
+                </table>
+            </wicked-panel>
             <button v-on:click="emitDisplayCallback" class="btn btn-primary">Display Callback URLs</button>
         </div>
         <div v-else-if="value.type == 'saml'">
@@ -256,7 +291,10 @@ function createDefaultConfig(authMethodType) {
                 firstNameField: 'given_name',
                 lastNameField: 'family_name',
                 emailField: 'email',
-                certificate: '-----BEGIN CERTIFICATE-----\r\nMIIFBjCCA...'
+                certificate: '-----BEGIN CERTIFICATE-----\r\nMIIFBjCCA...',
+                defaultGroups: {
+                    "DOMAIN\\_Some_Group": "dev"
+                }
             };
         case 'saml':
             return {

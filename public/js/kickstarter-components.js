@@ -597,6 +597,17 @@ Vue.component('wicked-markdown', {
     `
 });
 
+Vue.component('wicked-group-picker', {
+    props: ['value', 'groups', 'includeNone'],
+    template: `
+        <select class="form-control" :value="value" v-on:input="$emit('input', $event.target.value)">
+            <option v-if="!value && !includeNone" disabled value>Select an option</option>
+            <option v-if="!!includeNone" value="">&lt;none&gt;</option>
+            <option v-for="(group, index) in groups.groups" :value="group.id">{{ group.name }} ({{ group.id }})</option>
+        </select>
+    `
+});
+
 Vue.component('helm-chart', {
     template: `
         <a href="https://github.com/Haufe-Lexware/wicked.haufe.io/tree/master/wicked" target="_blank">Wicked Kubernetes Helm Chart</a>

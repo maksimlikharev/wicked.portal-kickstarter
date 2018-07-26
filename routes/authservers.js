@@ -57,7 +57,7 @@ function jsonifyObject(ob) {
     for (let p in ob) {
         const pt = typeof ob[p];
         if (pt === 'object') {
-            if (p === 'config' || p === 'endpoints') {
+            if (p === 'config' || p === 'endpoints' || p === 'defaultGroups') {
                 jsonifyObject(ob[p]);
             } else {
                 ob[p] = JSON.stringify(ob[p], null, 2);
@@ -103,7 +103,6 @@ router.get('/:serverId', function (req, res, next) {
             if (amServerId !== serverId) // non-matching server
                 continue;
             const amAuthMethodId = am.substring(splitPos + 1);
-            console.log('Auth Method: ' + amAuthMethodId);
             const authMethod = authServer.authMethods.find(a => a.name === amAuthMethodId); // jshint ignore:line
             if (!authMethod) {
                 console.warn(`Auth Method ${am} is configured for portal, but is unknown.`);
@@ -113,6 +112,8 @@ router.get('/:serverId', function (req, res, next) {
         }
     }
 
+    const groups = utils.loadGroups(req.app);
+
     const viewModel = {
         configPath: req.app.get('config_path'),
         glob: glob,
@@ -120,6 +121,7 @@ router.get('/:serverId', function (req, res, next) {
         safeServerId: safeServerId,
         authServer: authServer,
         plugins: plugins,
+        groups: groups,
     };
 
     res.render('authserver', viewModel);

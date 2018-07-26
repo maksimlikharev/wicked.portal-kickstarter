@@ -39,10 +39,7 @@ Vue.component('wicked-api', {
         <div class="form-group">
             <label>Required User Group:</label>
             <p>Specify whether users need to belong to a specific user group to be able to see and use this API.</p>
-            <select v-model="value.requiredGroup" class="form-control">
-                <option value="">&lt;none&gt;</option>
-                <option v-for="group in groups.groups" :value="group.id">{{ group.name }} ({{ group.id }})</option>
-            </select>
+            <wicked-group-picker :include-none=true v-model="value.requiredGroup" :groups="groups" />
         </div>
 
         <wicked-string-array :allow-empty=true v-model="value.tags" label="Tags:" />
