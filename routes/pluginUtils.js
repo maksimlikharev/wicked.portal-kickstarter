@@ -25,6 +25,9 @@ pluginUtils.makeViewModel = function (configPlugins) {
         } else if ("cors" == plugin.name) {
             plugins.cors = plugin;
             plugins.cors.useCors = true;
+            console.log(JSON.stringify(plugins.cors, null, 2));
+            if (typeof (plugin.config.origins) === 'string')
+                plugin.config.origins = [plugin.config.origins];
             foundCors = true;
         } else if ("file-log" == plugin.name) {
             plugins.file_log = plugin;
@@ -73,7 +76,7 @@ pluginUtils.makeViewModel = function (configPlugins) {
             useCors: false,
             name: "cors",
             config: {
-                origins: '*',
+                origins: ['*'],
                 methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
             }
         };
