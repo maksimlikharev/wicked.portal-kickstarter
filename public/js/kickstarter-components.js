@@ -444,7 +444,8 @@ Vue.component('wicked-plugins', {
                 and definitely <strong>not recommended</strong>.</p>
                 <wicked-checkbox v-model="value.cors.useCors" label="<strong>Use the CORS plugin</strong>" />
 
-                <wicked-input v-model="value.cors.config.origins" label="Access-Control-Allow-Origin:" hint="Allowed origins; to allow all origins, specify <code>*</code>" :env-var="envPrefix + 'CORS_ORIGINS'" />
+                <label>Access-Control-Allow-Origin:</label>
+                <wicked-string-array v-model="value.cors.config.origins" :allow-empty=false />
                 <wicked-input v-model="value.cors.config.methods" label="Access-Control-Allow-Methods" hint="Value for the <code>Access-Control-Allow-Methods</code> header, expects a comma delimited string (e.g. GET,POST). Defaults to GET,HEAD,PUT,PATCH,POST,DELETE." :env-var="envPrefix + 'CORS_METHODS'" />
                 <wicked-input v-model="value.cors.config.headers" label="Access-Control-Allow-Headers" hint="Value for the <code>Access-Control-Allow-Headers</code> header, expects a comma delimited string (e.g. <code>Origin,Authorization</code>). Defaults to the value of the <code>Access-Control-Request-Headers</code> header." :env-var="envPrefix + 'CORS_HEADERS'" />
                 <wicked-input v-model="value.cors.config.exposed_headers" label="Access-Control-Expose-Headers" hint="Value for the <code>Access-Control-Expose-Headers</code> header, expects a comma delimited string (e.g. <code>Origin,Authorization</code>). If not specified, no custom headers are exposed." :env-var="envPrefix + 'CORS_EXPOSE_HEADERS'" />

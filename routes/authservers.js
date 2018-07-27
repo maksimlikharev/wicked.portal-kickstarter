@@ -79,6 +79,9 @@ router.get('/:serverId', function (req, res, next) {
     if (!authServer.uri)
         authServer.uri = '/auth'; // Default
     console.log(authServer.uri);
+    const authId = `${serverId}-auth`;
+    authServer.id = authId;
+    authServer.config.api.name = authId;
     
     let origPlugins = [];
     if (authServer.config && authServer.config.plugins)
@@ -147,6 +150,7 @@ router.post('/:serverId/api', function (req, res, next) {
 
     const authServer = utils.loadAuthServer(req.app, serverId);
     const updatedInfo = body.authServer;
+    authServer.id = updatedInfo.id;
     authServer.desc = updatedInfo.desc;
     authServer.config = updatedInfo.config;
     authServer.config.api.strip_uri = (!authServer.config.api.strip_uri) ? false : authServer.config.api.strip_uri;

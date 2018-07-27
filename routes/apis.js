@@ -160,14 +160,14 @@ router.post('/:apiId/api', function (req, res, next) {
     // console.log(JSON.stringify(body, null, 2));
     const apiId = req.params.apiId;
     const apis = utils.loadApis(req.app);
-    body.apis.tags = body.apis.tags ? body.apis.tags.filter(t => !!t) : [];
+    body.api.tags = body.api.tags ? body.api.tags.filter(t => !!t) : [];
     const apiIndex = apis.apis.findIndex(a => a.id === apiId);
     apis.apis[apiIndex] = body.api;
     utils.saveApis(req.app, apis);
 
     const plugins = pluginUtils.makePluginsArray(body.plugins);
     const config = body.config;
-    config.uris = config.uris.filter(u => !!u);
+    config.api.uris = config.api.uris.filter(u => !!u);
 
     const kongConfig = {
         api: config.api,
