@@ -622,6 +622,11 @@ function getSwaggerFileName(app, apiId) {
     return swaggerFileName;
 }
 
+utils.existsSwagger = function (app, apiId) {
+    const swaggerFileName = getSwaggerFileName(app, apiId);
+    return fs.existsSync(swaggerFileName);
+};
+
 utils.loadSwagger = function (app, apiId) {
     console.log('apiId: ' + apiId);
     // Hmmm... what if this thing is not valid JSON?

@@ -44,7 +44,8 @@ router.post('/', function (req, res, next) {
             desc: newApiId,
             auth: "key-auth",
             tags: [],
-            plans: []
+            plans: [],
+            authMethods: []
         });
 
         utils.prepareNewApi(req.app, newApiId);
@@ -117,11 +118,38 @@ router.get('/:apiId', function (req, res, next) {
         thisApi.requiredGroup = '';
     if (!thisApi.hasOwnProperty('registrationPool'))
         thisApi.registrationPool = '';
+    if (!thisApi.authMethods || !Array.isArray(thisApi.authMethods))
+        thisApi.authMethods = [];
+    if (thisApi.settings) {
+        if (thisApi.settings.scopes) {
+            if (typeof (thisApi.settings.scopes) === 'string') {
+                if (thisApi.settings.scopes) {
+                    const oldScope = thisApi.settings.scopes;
+                    thisApi.settings.scopes = {};
+                    thisApi.settings.scopes[oldScope] = oldScope;
+                } else {
+                    thisApi.settings.scopes = {};
+                }
+            }
+        } else {
+            thisApi.settings.scopes = {};
+        }
+    } else {
+        thisApi.settings = {
+            scopes: {}
+        };
+    }
     console.log(thisApi);
     const config = utils.loadApiConfig(req.app, apiId);
+    if (!config.plugins)
+        config.plugins = [];
     const plugins = pluginUtils.makeViewModel(config.plugins);
     const apiDesc = utils.loadApiDesc(req.app, apiId);
-    const apiSwagger = JSON.stringify(utils.loadSwagger(req.app, apiId), null, 2);
+    let apiSwagger;
+    if (utils.existsSwagger(req.app, apiId))
+        apiSwagger = JSON.stringify(utils.loadSwagger(req.app, apiId), null, 2);
+    else
+        apiSwagger = "{}";
 
     // Assemble all auth methods
     const authServerNames = utils.getAuthServers(req.app);
@@ -151,7 +179,8 @@ router.get('/:apiId', function (req, res, next) {
         authMethods: authMethods,
         groups: groups,
         plans: plans,
-        pools: pools
+        pools: pools,
+        settings: {}
     });
 });
 
