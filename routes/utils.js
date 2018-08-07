@@ -925,6 +925,13 @@ utils.writeDockerfile = function (app, dockerFileContent) {
     fs.writeFileSync(dockerFile, dockerFileContent, 'utf8');
 };
 
+utils.deleteDockerFile = function (app) {
+    var configDir = getConfigDir(app);
+    var dockerFile = path.join(configDir, 'Dockerfile');
+    if (fs.existsSync(dockerFile))
+        fs.unlinkSync(dockerFile);
+};
+
 // ==== SSL / CERTIFICATES
 
 function getCertsDir(app) {

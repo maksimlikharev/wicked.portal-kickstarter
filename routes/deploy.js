@@ -69,8 +69,9 @@ router.post('/', function (req, res, next) {
             utils.writeDockerfile(req.app, dockerfileContent);
         }
     } else if (body.deleteCompose) {
-        console.error('DELETING COMPOSE FILE');
+        console.error('Deleting compose file and Dockerfile');
         utils.deleteDockerComposeFile(req.app);
+        utils.deleteDockerFile(req.app);
     } else if (body.editDockerfiles) {
         // Edit the Dockerfiles
         utils.writeDockerComposeFile(req.app, body.composeFile);
