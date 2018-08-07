@@ -17,16 +17,16 @@ services:
     - "STATS_PORT=1936"
     restart: unless-stopped
 
-  kongdb-data:
+  wicked-database-data:
     image: postgres:{{postgresVersion}}
     volumes:
     - "/var/lib/postgresql/data"
     command: "/bin/true"
 
-  kong-database:
+  wicked-database:
     image: postgres:{{postgresVersion}}
     volumes_from:
-    - "kongdb-data"
+    - "wicked-database-data"
     environment:
     - "POSTGRES_USER=kong"
     - "POSTGRES_PASSWORD=kong"
@@ -35,7 +35,7 @@ services:
   kong:
     image: {{{dockerPrefix}}}kong:{{dockerTag}}
     depends_on:
-    - "kong-database"
+    - "wicked-database"
     security_opt:
     - seccomp:unconfined
     expose:
@@ -47,6 +47,7 @@ services:
     - "EXCLUDE_PORTS=7946,8001,8443,8444"
     - "EXTRA_SETTINGS=http-request set-header X-Forwarded-Port %[dst_port]"
     - "SSL_CERT=${GATEWAY_PEM}"
+    - "KONG_PG_HOST=wicked-database"
     restart: unless-stopped
 
 {{#useDataOnly}}
@@ -72,6 +73,7 @@ services:
     restart: unless-stopped
     environment:
     - NODE_ENV
+    - LOG_LEVEL
     - DEBUG
     - {{portalHostVarName}}
     - {{apiHostVarName}}
@@ -105,6 +107,7 @@ services:
     - "3010"
     environment:
     - "LOG_LEVEL"
+    restart: unless-stopped
 
   portal-redis:
     image: redis:{{redisVersion}}
