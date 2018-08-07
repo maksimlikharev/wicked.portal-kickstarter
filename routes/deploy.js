@@ -24,7 +24,7 @@ router.get('/', function (req, res, next) {
     var dockerComposeFile = utils.readDockerComposeFile(req.app);
     var dockerFile = utils.readDockerfile(req.app);
 
-    let hasDockerFiles = dockerComposeFile && dockerFile;
+    let hasDockerFiles = dockerComposeFile || dockerFile;
     let glob = utils.loadGlobals(req.app);
 
     let apiHost = fwibbleHost(glob.network.apiHost);
@@ -56,20 +56,26 @@ router.post('/', function (req, res, next) {
     if (body.createDockerfiles) {
         if (body.alpine)
             body.buildAlpine = "-alpine";
+        body.useDataOnly = (body.injectType === 'build');
         // Create new Dockerfiles
         var composeTemplate = utils.readDockerComposeTemplate(req.app);
-        var dockerfileTemplate = utils.readDockerfileTemplate(req.app);
-
         var composeContent = mustache.render(composeTemplate, body);
-        var dockerfileContent = mustache.render(dockerfileTemplate, body);
-
         utils.writeDockerComposeFile(req.app, composeContent);
-        utils.writeDockerfile(req.app, dockerfileContent);
 
+        // Only create a Dockerfile if using the data only method
+        if (body.useDataOnly) {
+            var dockerfileTemplate = utils.readDockerfileTemplate(req.app);
+            var dockerfileContent = mustache.render(dockerfileTemplate, body);
+            utils.writeDockerfile(req.app, dockerfileContent);
+        }
+    } else if (body.deleteCompose) {
+        console.error('DELETING COMPOSE FILE');
+        utils.deleteDockerComposeFile(req.app);
     } else if (body.editDockerfiles) {
         // Edit the Dockerfiles
         utils.writeDockerComposeFile(req.app, body.composeFile);
-        utils.writeDockerfile(req.app, body.dockerFile);
+        if (body.dockerFile)
+            utils.writeDockerfile(req.app, body.dockerFile);
     }
 
     // Write changes to Kickstarter.json

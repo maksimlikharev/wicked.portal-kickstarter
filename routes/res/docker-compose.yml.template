@@ -49,24 +49,26 @@ services:
     - "SSL_CERT=${GATEWAY_PEM}"
     restart: unless-stopped
 
+{{#useDataOnly}}
+  # If you want to switch to the git clone method, remove this container here,
+  # and also from the "volumes_from" section of the portal-api container.
+  # Docs here: https://github.com/Haufe-Lexware/wicked.haufe.io/blob/master/doc/static-config-git-clone.md
   portal-api-data-static:
     build: 
       context: static
     volumes:
     - "/var/portal-api/static"
     command: "/bin/true"
-
-  portal-api-data-dynamic:
-    image: {{{dockerPrefix}}}portal-api:{{dockerTag}}{{buildAlpine}}
-    volumes:
-    - "/var/portal-api/dynamic"
-    command: "/bin/true"
+{{/useDataOnly}}
 
   portal-api:
     image: {{{dockerPrefix}}}portal-api:{{dockerTag}}{{buildAlpine}}
+{{#useDataOnly}}
+    # Remove the "volumes_from" section when moving from "build data-only container" to
+    # using the git clone method. See above.
     volumes_from:
     - "portal-api-data-static"
-    - "portal-api-data-dynamic"
+{{/useDataOnly}}
     restart: unless-stopped
     environment:
     - NODE_ENV
@@ -84,14 +86,25 @@ services:
     depends_on:
     - "portal-api"
     - "portal-redis"
+    - "portal-auth"
     expose:
     - "3000"
     environment:
     - "VIRTUAL_HOST=https://{{portalHost}}:443"
     - "VIRTUAL_HOST_WEIGHT=0"
     - "SSL_CERT=${PORTAL_PEM}"
-    - "DEBUG"
+    - "LOG_LEVEL"
     restart: unless-stopped
+
+  portal-auth:
+    image: {{{dockerPrefix}}}portal-auth:{{dockerTag}}{{buildAlpine}}
+    depends_on:
+    - "portal-api"
+    - "portal-redis"
+    expose:
+    - "3010"
+    environment:
+    - "LOG_LEVEL"
 
   portal-redis:
     image: redis:{{redisVersion}}
@@ -105,7 +118,7 @@ services:
     - "kong"
     restart: unless-stopped
     environment:
-    - DEBUG
+    - "LOG_LEVEL"
 
   portal-mailer:
     image: {{{dockerPrefix}}}portal-mailer:{{dockerTag}}{{buildAlpine}}
@@ -113,7 +126,7 @@ services:
     depends_on:
     - "portal-api"
     environment:
-    - DEBUG
+    - "LOG_LEVEL"
 
   portal-chatbot:
     image: {{{dockerPrefix}}}portal-chatbot:{{dockerTag}}{{buildAlpine}}
@@ -121,4 +134,4 @@ services:
     depends_on:
     - "portal-api"
     environment:
-    - DEBUG
+    - "LOG_LEVEL"

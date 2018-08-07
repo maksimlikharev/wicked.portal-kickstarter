@@ -899,6 +899,13 @@ utils.writeDockerComposeFile = function (app, composeFileContent) {
     fs.writeFileSync(composeFile, composeFileContent, 'utf8');
 };
 
+utils.deleteDockerComposeFile = function (app) {
+    var baseDir = getBaseDir(app);
+    var composeFile = path.join(baseDir, 'docker-compose.yml');
+    if (fs.existsSync(composeFile))
+        fs.unlinkSync(composeFile);
+};
+
 utils.readDockerfileTemplate = function (app) {
     return fs.readFileSync(path.join(getResDir(), 'Dockerfile.template'), 'utf8');
 };

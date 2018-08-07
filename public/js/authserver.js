@@ -216,7 +216,7 @@ Vue.component('add-auth-method', {
                 name: this.authMethodId,
                 friendlyShort: 'Short friendly name',
                 friendlyLong: 'Long friendly name',
-                config: createDefaultConfig(this.selectedType)
+                config: createDefaultConfig(this.selectedType, this.authMethodId)
             });
         }
     },
@@ -244,7 +244,7 @@ Vue.component('add-auth-method', {
     `
 });
 
-function createDefaultConfig(authMethodType) {
+function createDefaultConfig(authMethodType, authMethodId) {
     switch (authMethodType) {
         case 'local':
             return {
@@ -297,6 +297,7 @@ function createDefaultConfig(authMethodType) {
                 }
             };
         case 'saml':
+            const envVarPrefix = '$PORTAL_AUTH_SAML_' + authMethodId.toUpperCase().replace(/\-/g, '_') + '_';
             return {
                 trustUsers: true,
                 profile: JSON.stringify({
@@ -308,15 +309,15 @@ function createDefaultConfig(authMethodType) {
                 }, null, 2),
                 "spOptions": JSON.stringify({
                     "nameid_format": "urn:oasis:names:tc:SAML:2.0:nameid-format:transient",
-                    "certificate": "-----BEGIN CERTIFICATE-----\nMIICuDCC...",
-                    "private_key": "-----BEGIN PRIVATE KEY-----\nMIICuDCC...",
+                    "certificate": envVarPrefix + 'SP_CERT',
+                    "private_key": envVarPrefix + 'SP_KEY',
                     "sign_get_request": false,
                     "allow_unencrypted_assertion": true
                 }, null, 2),
                 "idpOptions": JSON.stringify({
                     "sso_login_url": "https://login.saml-provider.com/auth/SSORedirect/metaAlias/idp",
                     "certificates": [
-                        "-----BEGIN CERTIFICATE-----\nMIICrTCC..."
+                        envVarPrefix + 'IDP_CERT'
                     ],
                     "sign_get_request": false,
                     "allow_unencrypted_assertion": true
