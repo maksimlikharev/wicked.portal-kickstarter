@@ -42,7 +42,9 @@ router.get('/', function (req, res, next) {
         apiHost: apiHost,
         apiHostVarName: apiHostVarName,
         portalHost: portalHost,
-        portalHostVarName: portalHostVarName
+        portalHostVarName: portalHostVarName,
+        useMailer: glob.mailer && glob.mailer.useMailer,
+        useChatbot: glob.chatbot && glob.chatbot.useChatbot
     });
 });
 
@@ -58,9 +60,14 @@ router.post('/', function (req, res, next) {
             body.buildAlpine = "-alpine";
         body.useDataOnly = (body.injectType === 'build');
         // Create new Dockerfiles
-        var composeTemplate = utils.readDockerComposeTemplate(req.app);
-        var composeContent = mustache.render(composeTemplate, body);
+        const composeTemplate = utils.readDockerComposeTemplate(req.app);
+        const composeContent = mustache.render(composeTemplate, body);
         utils.writeDockerComposeFile(req.app, composeContent);
+
+        // Check for Chatbot and Mailer
+        const glob = utils.loadGlobals(req.app);
+        body.useMailer = glob.mailer && glob.mailer.useMailer;
+        body.useChatbot = glob.chatbot && glob.chatbot.useChatbot;
 
         // Only create a Dockerfile if using the data only method
         if (body.useDataOnly) {

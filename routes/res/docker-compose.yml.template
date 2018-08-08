@@ -75,8 +75,12 @@ services:
     - NODE_ENV
     - LOG_LEVEL
     - DEBUG
+{{#portalHostVarName}}
     - {{portalHostVarName}}
+{{/portalHostVarName}}
+{{#apiHostVarName}}
     - {{apiHostVarName}}
+{{/apiHostVarName}}
     - PORTAL_CONFIG_KEY
     - GIT_REPO
     - GIT_BRANCH
@@ -113,6 +117,7 @@ services:
     image: redis:{{redisVersion}}
     expose:
     - "6379"
+    restart: unless-stopped
 
   portal-kong-adapter:
     image: {{{dockerPrefix}}}portal-kong-adapter:{{dockerTag}}{{buildAlpine}}
@@ -123,6 +128,7 @@ services:
     environment:
     - "LOG_LEVEL"
 
+{{#useMailer}}
   portal-mailer:
     image: {{{dockerPrefix}}}portal-mailer:{{dockerTag}}{{buildAlpine}}
     restart: unless-stopped
@@ -130,7 +136,9 @@ services:
     - "portal-api"
     environment:
     - "LOG_LEVEL"
+{{/useMailer}}
 
+{{#useChatbot}}
   portal-chatbot:
     image: {{{dockerPrefix}}}portal-chatbot:{{dockerTag}}{{buildAlpine}}
     restart: unless-stopped
@@ -138,3 +146,4 @@ services:
     - "portal-api"
     environment:
     - "LOG_LEVEL"
+{{/useChatbot}}

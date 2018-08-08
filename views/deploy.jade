@@ -122,6 +122,16 @@ block content
                                             label Portal Host (env var is supported):
                                             input(type="text" name="portalHost" value=portalHost).form-control
 
+                                        if useChatbot
+                                            p The <code>docker-compose.yml</code> will contain a section for deploying the chatbot.
+                                        else
+                                            p The <code>docker-compose.yml</code> will <b>NOT</b> contain a section for deploying the chatbot. <a href="/chatbot">Configure the chatbot</a>.
+
+                                        if useMailer
+                                            p The <code>docker-compose.yml</code> will contain a section for deploying the mailer.
+                                        else
+                                            p The <code>docker-compose.yml</code> will <b>NOT</b> contain a section for deploying the mailer. <a href="/mailer">Configure the mailer</a>.
+
                                         input(type="hidden" name="apiHostVarName" value=apiHostVarName)
                                         input(type="hidden" name="portalHostVarName" value=portalHostVarName)
             else
