@@ -59,15 +59,15 @@ router.post('/', function (req, res, next) {
         if (body.alpine)
             body.buildAlpine = "-alpine";
         body.useDataOnly = (body.injectType === 'build');
-        // Create new Dockerfiles
-        const composeTemplate = utils.readDockerComposeTemplate(req.app);
-        const composeContent = mustache.render(composeTemplate, body);
-        utils.writeDockerComposeFile(req.app, composeContent);
-
         // Check for Chatbot and Mailer
         const glob = utils.loadGlobals(req.app);
         body.useMailer = glob.mailer && glob.mailer.useMailer;
         body.useChatbot = glob.chatbot && glob.chatbot.useChatbot;
+
+        // Create new Dockerfiles
+        const composeTemplate = utils.readDockerComposeTemplate(req.app);
+        const composeContent = mustache.render(composeTemplate, body);
+        utils.writeDockerComposeFile(req.app, composeContent);
 
         // Only create a Dockerfile if using the data only method
         if (body.useDataOnly) {
