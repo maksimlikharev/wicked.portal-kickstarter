@@ -9,7 +9,7 @@ router.get('/', function (req, res, next) {
     var glob = utils.loadGlobals(req.app);
     var envVars = utils.loadEnvDict(req.app);
     utils.mixinEnv(glob, envVars);
-    res.render('kongAdapter',
+    res.render('kongadapter',
         {
             configPath: req.app.get('config_path'),
             glob: glob
