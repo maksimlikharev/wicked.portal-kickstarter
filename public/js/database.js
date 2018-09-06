@@ -23,6 +23,7 @@ Vue.component('wicked-database', {
             <wicked-input v-model="value.storage.pgPort" label="Postgres Port:" env-var="PORTAL_STORAGE_PGPORT" hint="The Port of the Postgres server (defaults to <code>5432</code>)" />
             <wicked-input v-model="value.storage.pgUser" label="Postgres Username:" env-var="PORTAL_STORAGE_PGUSER" hint="The Postgres username (needs access to database <code>postgres</code> and must be allowed to create new databases)" />
             <wicked-input v-model="value.storage.pgPassword" label="Postgres Password:" env-var="PORTAL_STORAGE_PGPASSWORD" hint="Password for the postgres user" />
+            <wicked-input v-model="value.storage.pgDatabase" label="Postgres Database:" env-var="PORTAL_STORAGE_PGDATABASE" hint="Database to store wicked's data in" />
             
         </wicked-panel>
 
