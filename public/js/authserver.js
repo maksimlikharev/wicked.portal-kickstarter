@@ -244,6 +244,18 @@ Vue.component('add-auth-method', {
     `
 });
 
+Vue.component('password-validation', {
+    props: ['value', 'strategies'],
+    template: `
+        <wicked-panel type="primary" :open=true :collapsible=false title="Password Validation Strategy">
+            <p>Please select the method with which the default authorization server and wicked's API validates password strength.</p>
+            <select v-model="value.passwordStrategy" class="form-control">
+                <option v-for="(strategy, index) in strategies" :value="strategy.strategy">{{ strategy.description }}</option>
+            </select>
+        </wicked-panel>
+    `
+});
+
 function createDefaultConfig(authMethodType, authMethodId) {
     switch (authMethodType) {
         case 'local':

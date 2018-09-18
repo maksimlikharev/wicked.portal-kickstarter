@@ -17,6 +17,7 @@ block content
         div(id='authserverBase')
             -var envPrefix = 'PORTAL_AUTHSERVER_' + safeServerId.toUpperCase()
             -var envPrefixPlugins = envPrefix + '_PLUGINS_'
+            password-validation(v-model="glob" v-bind:strategies="passwordStrategies")
 
             auth-server(v-model="authServer" env-prefix="#{envPrefix}" server-id="#{safeServerId}" v-bind:groups="groups")
             
@@ -32,7 +33,8 @@ block afterScripts
             authServer: !{JSON.stringify(authServer)},
             plugins: !{JSON.stringify(plugins)},
             groups: !{JSON.stringify(groups)},
-            glob: !{JSON.stringify(glob)}
+            glob: !{JSON.stringify(glob)},
+            passwordStrategies: !{JSON.stringify(passwordStrategies)}
         };
 
     script(src='/js/authserver.js')

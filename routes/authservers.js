@@ -2,6 +2,7 @@
 
 var express = require('express');
 var router = express.Router();
+var passwordValidator = require('portal-env').PasswordValidator;
 
 var utils = require('./utils');
 var pluginUtils = require('./pluginUtils');
@@ -16,7 +17,7 @@ router.get('/', function (req, res, next) {
         // If we only have one, redirect there directly
         return res.redirect(`/authservers/${authServerNames[0]}`);
     }
-
+ 
     res.render('authservers',
         {
             configPath: req.app.get('config_path'),
@@ -116,6 +117,7 @@ router.get('/:serverId', function (req, res, next) {
     }
 
     const groups = utils.loadGroups(req.app);
+    const passwordStrategies = passwordValidator.getStrategies();
 
     const viewModel = {
         configPath: req.app.get('config_path'),
@@ -125,6 +127,7 @@ router.get('/:serverId', function (req, res, next) {
         authServer: authServer,
         plugins: plugins,
         groups: groups,
+        passwordStrategies: passwordStrategies
     };
 
     res.render('authserver', viewModel);
@@ -162,6 +165,8 @@ router.post('/:serverId/api', function (req, res, next) {
     const authMethods = body.authServer.authMethods;
     utils.unpackObjects(authMethods);
     authServer.authMethods = authMethods;
+    // Update password strategy in globals.json
+    glob.passwordStrategy = body.glob.passwordStrategy;
     // Throw out all auth methods from this auth server from globals
     if (glob.portal && glob.portal.authMethods) {
         const strippedList = [];
