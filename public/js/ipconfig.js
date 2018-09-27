@@ -41,6 +41,7 @@ Vue.component('wicked-ipconfig', {
             <wicked-input v-model="value.network.portalUrl" label="Portal URL:" hint="The URL for the Portal UI, as seen from behind the load balancer (NOT the above Portal Host!)." env-var="PORTAL_PORTAL_URL" />
             <wicked-input v-model="value.network.kongAdapterUrl" label="Kong Adapter URL:" hint="The URL under which the Kong Adapter can be reached (behind the load balancer)." env-var="PORTAL_KONG_ADAPTER_URL" />
             <wicked-input v-model="value.network.kongAdminUrl" label="Kong Management URL:" hint="The Kong Admin URL (usually port 8001), as seen from behind the load balancer." env-var="PORTAL_KONG_ADMIN_URL" />
+            <wicked-input v-model="value.network.kongProxyUrl" label="[OPTIONAL] Kong Proxy URL:" hint="The Kong Proxy URL (usually port 8000), as seen from behind the load balancer. This field can be left empty if it is the same as the Kong Admin URL, just using port 8000 instead (the default). If you need a custom setting here, fill this field." env-var="PORTAL_KONG_PROXY_URL" />
             <wicked-input v-model="value.network.mailerUrl" label="Mailer URL:" hint="The URL under which the Mailer component can be reached (behind the load balancer)." env-var="PORTAL_MAILER_URL" />
             <wicked-input v-model="value.network.chatbotUrl" label="Chatbot URL:" hint="The URL under which the Chatbot component can be reached (behind the load balancer)." env-var="PORTAL_CHATBOT_URL" />
         </wicked-panel>
