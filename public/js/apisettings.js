@@ -79,6 +79,7 @@ Vue.component('wicked-api', {
             <wicked-checkbox v-model="value.settings.enable_password_grant" label="<b>Resource Owner Password Grant</b> (three-legged, for e.g. native mobile Apps)" />
             <wicked-checkbox v-model="value.settings.enable_authorization_code" label="<b>Authorization Code Grant</b> (three-legged, for APIs delegating access to user data)" />
             <wicked-input v-model="value.settings.token_expiration" label="Token Expiration (seconds):" />
+            <wicked-input v-model="value.settings.refresh_token_ttl" label="Refresh Token Time to live (seconds). Set 0 for unlimited:" />
             <!-- <wicked-input v-model="value.settings.scopes" label="Scopes:" hint="Space-separated list of scopes." :env-var="envPrefix + 'SCOPES'" /> -->
             <wicked-panel title="API Scopes" type="default">
                 <wicked-checkbox v-model="value.settings.mandatory_scope" label="<b>Mandatory Scope:</b> If specified, it is not possible to create access tokens without explicitly specifying a scope. Otherwise an access token with an empty scope may be created." />
