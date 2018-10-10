@@ -222,7 +222,6 @@ Vue.component('wicked-input', {
                     v-bind:value="value"
                     v-on:input="$emit('input', $event.target.value)">
                 <span class="input-group-btn">
-                    <!-- <button v-if="showEnvVar" class="btn btn-warning" v-on:click="makeVar">Make ENV var</button> -->
                     <div v-if="showEnvVar" class="dropdown">
                         <button class="btn btn-warning dropdown-toggle" type="button" :id="internalId + '_dd'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                             Create ENV var
