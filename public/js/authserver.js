@@ -330,6 +330,7 @@ function createDefaultConfig(authMethodType, authMethodId) {
                 }, null, 2),
                 "idpOptions": JSON.stringify({
                     "sso_login_url": "https://login.saml-provider.com/auth/SSORedirect/metaAlias/idp",
+                    "sso_logout_url": "https://login.saml-provider.com/auth/IDPSloRedirect/metaAlias/idp",
                     "certificates": [
                         envVarPrefix + 'IDP_CERT'
                     ],
