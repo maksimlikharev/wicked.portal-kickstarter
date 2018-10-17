@@ -102,6 +102,10 @@ Vue.component('auth-method', {
             <wicked-checkbox v-model="value.config.trustUsers" label="Trust user email addresses (only for internal use)" />
             <wicked-checkbox v-model="value.config.disableSignup" label="Disable interactive signup for new users" />
         </div>
+        <div v-else-if="value.type == 'external'">
+            <wicked-input v-model="value.config.validateUserPassUrl" label="URL to validate username/password:" :env-var="envPrefix + 'USERPASSURL'" hint="The auth server will POST to this URL to validate username and password, and expects a well-formed response. See <a href='https://apim-haufe-io.github.io/wicked.node-sdk/interfaces/_interfaces_.externaluserpassrequest.html' target='_blank'>ExternalUserPassRequest</a> and <a href='https://apim-haufe-io.github.io/wicked.node-sdk/interfaces/_interfaces_.externaluserpassresponse.html' target='_blank'>ExternalUserPassResponse</a>." />
+            <wicked-input v-model="value.config.allowRefreshUrl" label="URL for refreshing tokens:" :env-var="envPrefix + 'REFRESHURL'" hint="The auth server will POST to this URL to check whether it is allowed to refresh a token, and expects a well-formed response. See <a href='https://apim-haufe-io.github.io/wicked.node-sdk/interfaces/_interfaces_.externalrefreshrequest.html' target='_blank'>ExternalRefreshRequest</a> and <a href='https://apim-haufe-io.github.io/wicked.node-sdk/interfaces/_interfaces_.externalrefreshresponse.html' target='_blank'>ExternalRefreshResponse</a>." />
+        </div>
         <div v-else-if="value.type == 'google'">
             <wicked-input v-model="value.config.clientId" label="Google client ID:" hint="The Google client ID for the wicked API Portal" :env-var="envPrefix + 'CLIENTID'"/>
             <wicked-input v-model="value.config.clientSecret" label="Google client Secret:" hint="The Google client secret for the wicked API Portal" :env-var="envPrefix + 'CLIENTSECRET'"/>
@@ -228,6 +232,7 @@ Vue.component('add-auth-method', {
                 <select v-model="selectedType" class="form-control">
                     <option disabled value="">Please select a type</option>
                     <option>local</option>
+                    <option>external</option>
                     <option>google</option>
                     <option>github</option>
                     <option>twitter</option>
@@ -263,6 +268,11 @@ function createDefaultConfig(authMethodType, authMethodId) {
             return {
                 trustUsers: false,
                 disableSignup: false
+            };
+        case 'external':
+            return {
+                validateUserPassUrl: 'http://your-service.default.cluster.local:2000/login',
+                allowRefreshUrl: 'http://your-service.default.cluster.local:2000/refresh'
             };
         case 'github':
         case 'google':
