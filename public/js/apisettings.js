@@ -84,13 +84,18 @@ Vue.component('wicked-api', {
             <wicked-panel title="API Scopes" type="default">
                 <wicked-checkbox v-model="value.settings.mandatory_scope" label="<b>Mandatory Scope:</b> If specified, it is not possible to create access tokens without explicitly specifying a scope. Otherwise an access token with an empty scope may be created." />
                 <p>You can either specify a static list of scopes, or you can look the scopes up using a service (which you need to implement).
-                   In case the scope lookup URL (below) is specified, the static list is <b>not</b> used.</p>
-                <wicked-input v-model="value.scopeLookupUrl" label="Scope lookup URL:" hint="URL as reachable from the portal API deployment, which by a GET can retrieve a list of scopes. See TODO for a specification of the necessary format." :env-var="envPrefix + 'SCOPE_LOOKUP_URL'" />
+                   In case the scope lookup URL (below) is specified, the static list is <b>not</b> used. <b>Note:</b> This URL will be called with the API ID
+                   appended to it, e.g. <code>http://my-service:3000/scopes/&lt;api_id&gt;</code>. See 
+                   <a href="https://apim-haufe-io.github.io/wicked.node-sdk/interfaces/_interfaces_.scopelookupresponse.html" target="_blank">ScopeLookupResponse</a>.</p>
+                <wicked-input v-model="value.scopeLookupUrl" label="Scope lookup URL:" :env-var="envPrefix + 'SCOPE_LOOKUP_URL'" hint='URL as reachable from the portal API deployment, which by a GET can retrieve a list of scopes. TODO' />
 
                 <p>It is possible to delegate the scope decision from the end user to a third party instance; specify
                    the URL, as reachable from the Authorization Server instance inside your deployment, to the endpoint
-                   which accepts a POST with the desired scope and profile of the user (TODO: Link to documentation).</p>
-                <wicked-input v-model="value.passthroughScopeUrl" label="Passthrough Scope URL:" :env-var="envPrefix + 'SCOPE_URL'" />
+                   which accepts a POST with the desired scope and profile of the user.  See 
+                   <a href="https://apim-haufe-io.github.io/wicked.node-sdk/interfaces/_interfaces_.passthroughscoperequest.html" target="_blank">PassthroughScopeRequest</a>
+                   and <a href="https://apim-haufe-io.github.io/wicked.node-sdk/interfaces/_interfaces_.passthroughscoperesponse.html" target="_blank">PassthroughScopeResponse</a>
+                   for a description of request and response formats.</p>
+                <wicked-input v-model="value.passthroughScopeUrl" label="Passthrough Scope URL:" :env-var="envPrefix + 'SCOPE_URL'" hint="URL as reachable from the wicked/auth server deployment."/>
  
                 <table style="border-spacing: 5px; width: 100%">
                     <tr>
