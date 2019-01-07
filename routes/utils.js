@@ -454,7 +454,8 @@ utils.createEnv = function (app, newEnvId) {
             PORTAL_PORTAL_URL: { value: 'http://${LOCAL_IP}:3000' },
             PORTAL_SESSIONSTORE_TYPE: { type: 'file' },
             PORTAL_AUTHSERVER_URL: { value: 'http://${LOCAL_IP}:3010' },
-            PORTAL_KONG_OAUTH2_URL: { value: 'http://${LOCAL_IP}:3006' }
+            PORTAL_KONG_OAUTH2_URL: { value: 'http://${LOCAL_IP}:3006' },
+            PORTAL_STORAGE_PGHOST: { value: '${LOCAL_IP}' }
         };
     }
     fs.writeFileSync(envFileName, JSON.stringify(envDict, null, 2), 'utf8');

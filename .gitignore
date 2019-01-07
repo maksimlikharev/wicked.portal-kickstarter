@@ -5,3 +5,4 @@ dynamic
 node_modules
 static
 Dockerfile
+package-lock.json
