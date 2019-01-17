@@ -63,7 +63,7 @@ services:
 {{/useDataOnly}}
 
   portal-api:
-    image: {{{dockerPrefix}}}portal-api:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}api:{{dockerTag}}{{buildAlpine}}
 {{#useDataOnly}}
     # Remove the "volumes_from" section when moving from "build data-only container" to
     # using the git clone method. See above.
@@ -88,7 +88,7 @@ services:
     - GIT_REVISION
 
   portal:
-    image: {{{dockerPrefix}}}portal:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}ui:{{dockerTag}}{{buildAlpine}}
     depends_on:
     - "portal-api"
     - "portal-redis"
@@ -103,7 +103,7 @@ services:
     restart: unless-stopped
 
   portal-auth:
-    image: {{{dockerPrefix}}}portal-auth:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}auth:{{dockerTag}}{{buildAlpine}}
     depends_on:
     - "portal-api"
     - "portal-redis"
@@ -120,7 +120,7 @@ services:
     restart: unless-stopped
 
   portal-kong-adapter:
-    image: {{{dockerPrefix}}}portal-kong-adapter:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}kong-adapter:{{dockerTag}}{{buildAlpine}}
     depends_on:
     - "portal-api"
     - "kong"
@@ -130,7 +130,7 @@ services:
 
 {{#useMailer}}
   portal-mailer:
-    image: {{{dockerPrefix}}}portal-mailer:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}mailer:{{dockerTag}}{{buildAlpine}}
     restart: unless-stopped
     depends_on:
     - "portal-api"
@@ -140,7 +140,7 @@ services:
 
 {{#useChatbot}}
   portal-chatbot:
-    image: {{{dockerPrefix}}}portal-chatbot:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}chatbot:{{dockerTag}}{{buildAlpine}}
     restart: unless-stopped
     depends_on:
     - "portal-api"
