@@ -43,7 +43,7 @@ if (process.argv.length < 3) {
 // Docker special case
 if (process.argv.length == 3) {
     if (process.argv[2] == '--new') {
-        console.log("Assuming configuration path to be /var/portal-api.");
+        info("Assuming configuration path to be /var/portal-api.");
         process.argv.push('/var/portal-api');
     }
 }
@@ -54,20 +54,21 @@ let basePath;
 if (process.argv.length == 4) {
     const parameter = process.argv[2];
     if (parameter != '--new') {
-        console.log("Expected parameter '--new', received '" + parameter + "'.");
+        error("Expected parameter '--new', received '" + parameter + "'.");
         process.exit(1);
     }
 
     basePath = process.argv[3];
 
     if (fs.existsSync(path.join(basePath, 'static', 'globals.json'))) {
-        console.log("The given path '" + basePath + "' already contains a configuration repository. Will not create a new repository.");
+        error("The given path '" + basePath + "' already contains a configuration repository. Will not create a new repository.");
         process.exit(1);
     }
 
     info('Creating a new configuration directory...');
     configPath = path.join(basePath, 'static');
     if (!fs.existsSync(configPath)) {
+        info(`Creating directory ${configPath}...`);
         fs.mkdirSync(configPath);
     }
 
@@ -105,8 +106,8 @@ if (process.argv.length == 4) {
 const globalConfigFile = path.join(configPath, 'globals.json');
 // Verify the configuration repository.
 if (!fs.existsSync(globalConfigFile)) {
-    console.log("Expected 'globals.json' in directory '" + configPath + "'.");
-    console.log("Exiting.");
+    error("Expected 'globals.json' in directory '" + configPath + "'.");
+    error("Exiting.");
     process.exit(1);
 }
 
