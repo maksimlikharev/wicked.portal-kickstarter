@@ -1,51 +1,59 @@
 'use strict';
 
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+/* global __dirname **/
 
-var routes = require('./routes/index');
-var apis = require('./routes/apis');
-var auth = require('./routes/auth');
-var content = require('./routes/content');
-var design = require('./routes/design');
-var email = require('./routes/email');
-var groups = require('./routes/groups');
-var ipconfig = require('./routes/ipconfig');
-var database = require('./routes/database');
-var plans = require('./routes/plans');
-var recaptcha = require('./routes/recaptcha');
-var kongadapter = require('./routes/kongadapter');
-var deploy = require('./routes/deploy');
-var chatbot = require('./routes/chatbot');
-var swagger = require('./routes/swagger');
-var apidesc = require('./routes/apidesc');
-var users = require('./routes/users');
-var editcontent = require('./routes/editcontent');
-var templates = require('./routes/templates');
-var envs = require('./routes/envs');
-var ssl = require('./routes/ssl');
-var shutdown = require('./routes/shutdown');
-var authservers = require('./routes/authservers');
-var pools = require('./routes/pools');
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:kickstart');
+const routes = require('./routes/index');
+const apis = require('./routes/apis');
+const auth = require('./routes/auth');
+const content = require('./routes/content');
+const design = require('./routes/design');
+const email = require('./routes/email');
+const groups = require('./routes/groups');
+const ipconfig = require('./routes/ipconfig');
+const database = require('./routes/database');
+const plans = require('./routes/plans');
+const recaptcha = require('./routes/recaptcha');
+const kongadapter = require('./routes/kongadapter');
+const deploy = require('./routes/deploy');
+const chatbot = require('./routes/chatbot');
+const swagger = require('./routes/swagger');
+const apidesc = require('./routes/apidesc');
+const users = require('./routes/users');
+const editcontent = require('./routes/editcontent');
+const templates = require('./routes/templates');
+const envs = require('./routes/envs');
+const ssl = require('./routes/ssl');
+const shutdown = require('./routes/shutdown');
+const authservers = require('./routes/authservers');
+const pools = require('./routes/pools');
 
 // API functions
-var api = require('./routes/api');
+const api = require('./routes/api');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // Combined == Apache style logs
-if (app.get('env') == 'development')
-    app.use(logger('dev'));
-else
-    app.use(logger('combined'));
+// if (app.get('env') == 'development')
+//     app.use(logger('dev'));
+// else
+//     app.use(logger('combined'));
+const accessLog = require('portal-env').Logger('kickstarter:access').info;
+app.use(logger(function (tokens, req, res) {
+    accessLog(`${tokens.method(req, res)} ${tokens.url(req, res)} ${tokens.status(req, res)} - ${tokens['response-time'](req, res)}ms`);
+    return null;
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }));
 app.use(cookieParser());
@@ -84,35 +92,24 @@ app.use('/shutdown', shutdown);
 app.use('/api', api);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+app.use(function (req, res, next) {
+    const err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
 
 // error handlers
-
 // development error handler
 // will print stacktrace
-app.use(function(err, req, res, next) {
-  console.error(err);
-  res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: err
-  });
+// as kickstarter is development only, this is fine and wanted
+app.use(function (err, req, res, next) {
+    error(err);
+    error(err.stack);
+    res.status(err.status || 500);
+    res.render('error', {
+        message: err.message,
+        error: err
+    });
 });
-// }
-
-// // production error handler
-// // no stacktraces leaked to user
-// app.use(function(err, req, res, next) {
-//   res.status(err.status || 500);
-//   res.render('error', {
-//     message: err.message,
-//     error: {}
-//   });
-// });
-
 
 module.exports = app;

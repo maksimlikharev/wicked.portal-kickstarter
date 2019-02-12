@@ -1,13 +1,14 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:recaptcha');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 router.get('/', function (req, res, next) {
-    var glob = utils.loadGlobals(req.app);
-    var envVars = utils.loadEnvDict(req.app);
+    const glob = utils.loadGlobals(req.app);
+    const envVars = utils.loadEnvDict(req.app);
     utils.mixinEnv(glob, envVars);
     res.render('recaptcha',
         {
@@ -17,25 +18,25 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/', function (req, res, next) {
-    var redirect = req.body.redirect;
-    //console.log(req.body);
+    const redirect = req.body.redirect;
+    //debug(req.body);
 
-    var glob = utils.loadGlobals(req.app);
-    var envVars = utils.loadEnvDict(req.app);
+    const glob = utils.loadGlobals(req.app);
+    const envVars = utils.loadEnvDict(req.app);
 
-    var body = utils.jsonifyBody(req.body);
-    //console.log(body);
+    const body = utils.jsonifyBody(req.body);
+    //debug(body);
     glob.recaptcha = body.glob.recaptcha;
-    
+
     utils.mixoutEnv(glob, envVars);
-    //console.log(glob);
-    //console.log(envVars);
-    
+    //debug(glob);
+    //debug(envVars);
+
     utils.saveGlobals(req.app, glob);
     utils.saveEnvDict(req.app, envVars, "default");
 
     // Write changes to Kickstarter.json
-    var kickstarter = utils.loadKickstarter(req.app);
+    const kickstarter = utils.loadKickstarter(req.app);
     kickstarter.recaptcha = 3;
     utils.saveKickstarter(req.app, kickstarter);
 

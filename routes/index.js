@@ -1,12 +1,13 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
-var utils = require('./utils');
+const express = require('express');
+const router = express.Router();
+const utils = require('./utils');
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:index');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-    var kickstarter = utils.loadKickstarter(req.app);
+    const kickstarter = utils.loadKickstarter(req.app);
     res.render('index',
         {
             configPath: req.app.get('config_path'),
@@ -15,7 +16,7 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/', function (req, res, next) {
-    var redirect = req.body.redirect;
+    const redirect = req.body.redirect;
 
     // Do things with the POST body.
 

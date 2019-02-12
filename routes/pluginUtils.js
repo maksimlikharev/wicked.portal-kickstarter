@@ -1,23 +1,25 @@
 'use strict';
 
-var pluginUtils = function () { };
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:plugin-utils');
+
+const pluginUtils = function () { };
 
 pluginUtils.makeViewModel = function (configPlugins) {
-    var foundRateLimiting = false;
-    var foundCors = false;
-    var foundFileLog = false;
-    var foundCorrelationId = false;
-    var foundAwsLambda = false;
+    let foundRateLimiting = false;
+    let foundCors = false;
+    let foundFileLog = false;
+    let foundCorrelationId = false;
+    let foundAwsLambda = false;
 
-    var plugins = {
+    const plugins = {
         others: {
             useOthers: false,
             config: []
         }
     };
 
-    for (var i = 0; i < configPlugins.length; ++i) {
-        var plugin = configPlugins[i];
+    for (let i = 0; i < configPlugins.length; ++i) {
+        const plugin = configPlugins[i];
         if ("rate-limiting" == plugin.name) {
             plugins.rate_limiting = plugin;
             plugins.rate_limiting.useRateLimiting = true;
@@ -25,7 +27,7 @@ pluginUtils.makeViewModel = function (configPlugins) {
         } else if ("cors" == plugin.name) {
             plugins.cors = plugin;
             plugins.cors.useCors = true;
-            console.log(JSON.stringify(plugins.cors, null, 2));
+            debug(JSON.stringify(plugins.cors, null, 2));
             if (typeof (plugin.config.origins) === 'string')
                 plugin.config.origins = [plugin.config.origins];
             foundCors = true;
@@ -122,8 +124,7 @@ pluginUtils.makeViewModel = function (configPlugins) {
                 name: "...",
                 config: {}
             }
-        ],
-            null, 2);
+        ], null, 2);
     }
 
     return plugins;
@@ -131,8 +132,8 @@ pluginUtils.makeViewModel = function (configPlugins) {
 
 // Sanitize JSON format for Kong
 function fixRateLimiting(data) {
-    //console.log('fixRateLimiting: ' + JSON.stringify(data, null, 2));
-    var rls = [
+    //debug('fixRateLimiting: ' + JSON.stringify(data, null, 2));
+    const rls = [
         "second",
         "minute",
         "hour",
@@ -140,8 +141,8 @@ function fixRateLimiting(data) {
         "month",
         "year"
     ];
-    for (var propIndex in rls) {
-        var prop = rls[propIndex];
+    for (let propIndex in rls) {
+        const prop = rls[propIndex];
         if (data.config.hasOwnProperty(prop) && data.config[prop] !== "")
             data.config[prop] = Number(data.config[prop]);
         else if (data.config.hasOwnProperty(prop))
@@ -153,19 +154,19 @@ function fixRateLimiting(data) {
 
 // Sanitize JSON format for Kong
 function fixCors(data) {
-    //console.log('fixCors: ' + JSON.stringify(data, null, 2));
+    //debug('fixCors: ' + JSON.stringify(data, null, 2));
     if (data.config.hasOwnProperty('max_age') && data.config.max_age !== "")
         data.config.max_age = Number(data.config.max_age);
     else if (data.config.hasOwnProperty('max_age'))
         delete data.config.max_age;
-    var props = [
+    const props = [
         "origins",
         "methods",
         "headers",
         "exposed_headers"
     ];
-    for (var propIndex in props) {
-        var prop = props[propIndex];
+    for (let propIndex in props) {
+        const prop = props[propIndex];
         if (!(data.config.hasOwnProperty(prop) && data.config[prop] !== ""))
             delete data.config[prop];
     }
@@ -173,8 +174,8 @@ function fixCors(data) {
 }
 
 pluginUtils.makePluginsArray = function (bodyPlugins) {
-    //console.log(JSON.stringify(bodyPlugins, null, 2));
-    var plugins = [];
+    //debug(JSON.stringify(bodyPlugins, null, 2));
+    const plugins = [];
     if (bodyPlugins.rate_limiting.useRateLimiting) {
         delete bodyPlugins.rate_limiting.useRateLimiting;
         bodyPlugins.rate_limiting.name = 'rate-limiting';
@@ -201,11 +202,11 @@ pluginUtils.makePluginsArray = function (bodyPlugins) {
         plugins.push(bodyPlugins.correlation_id);
     }
     if (bodyPlugins.others.useOthers) {
-        var pluginsArray = JSON.parse(bodyPlugins.others.config);
+        const pluginsArray = JSON.parse(bodyPlugins.others.config);
         if (!Array.isArray(pluginsArray))
             throw new Error('The content of the "other plugins" text area must be a JSON array ([ ... ])!');
-        for (var i = 0; i < pluginsArray.length; ++i) {
-            var thisPlugin = pluginsArray[i];
+        for (let i = 0; i < pluginsArray.length; ++i) {
+            const thisPlugin = pluginsArray[i];
             if (!thisPlugin.name)
                 throw new Error('An item in the plugins array must always have a "name" property.');
             plugins.push(thisPlugin);

@@ -1,10 +1,11 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:api:index');
 
-var apiEnvs = require('./api_envs');
-var apiGlob = require('./api_glob');
+const apiEnvs = require('./api_envs');
+const apiGlob = require('./api_glob');
 
 // This is for AJAX calls from web pages.
 

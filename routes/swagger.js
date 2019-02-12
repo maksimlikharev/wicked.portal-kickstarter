@@ -1,15 +1,16 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
-var yaml = require('js-yaml');
+const express = require('express');
+const router = express.Router();
+const yaml = require('js-yaml');
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:swagger');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 router.get('/:apiId', function (req, res, next) {
-    var apiId = req.params.apiId;
-    var swagger = utils.loadSwagger(req.app, apiId);
-    var swaggerText = JSON.stringify(swagger, null, 4);
+    const apiId = req.params.apiId;
+    const swagger = utils.loadSwagger(req.app, apiId);
+    const swaggerText = JSON.stringify(swagger, null, 4);
     res.render('swagger',
         {
             configPath: req.app.get('config_path'),
@@ -20,10 +21,10 @@ router.get('/:apiId', function (req, res, next) {
 });
 
 router.post('/:apiId', function (req, res, next) {
-    var redirect = req.body.redirect;
-    var apiId = req.params.apiId;
+    const redirect = req.body.redirect;
+    const apiId = req.params.apiId;
 
-    var swagger = '';
+    let swagger = '';
     try {
         swagger = JSON.parse(req.body.swagger);
     } catch (err) {

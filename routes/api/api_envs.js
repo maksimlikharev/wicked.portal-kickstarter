@@ -1,15 +1,14 @@
 'use strict';
 
-var express = require('express');
-var fs = require('fs');
-var path = require('path');
-var router = express.Router();
-var envReader = require('portal-env');
+const express = require('express');
+const router = express.Router();
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:api:envs');
 
-var utils = require('../utils');
+const utils = require('../utils');
 
 router.get('/', function (req, res, next) {
     const envVar = req.query.env_var;
+    debug(`GET /envs?env_var=${envVar}`);
     if (!envVar)
         return res.status(400).json({ message: 'Invalid request; requires ?env_var=... parameter' });
     const envVars = utils.loadEnvDict(req.app);
@@ -37,18 +36,19 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/:envId', function (req, res, next) {
+    debug(`POST /envs/${req.params.envId}`);
     try {
-        var envId = req.params.envId;
-        var envVars = utils.loadEnvDict(req.app);
-        var body = utils.jsonifyBody(req.body);
-        console.log(body);
+        const envId = req.params.envId;
+        const envVars = utils.loadEnvDict(req.app);
+        const body = utils.jsonifyBody(req.body);
+        debug(body);
 
         if (!envVars[envId])
             return res.status(404).json({ message: 'Env ' + envId + ' not found.' });
-        var env = envVars[envId];
-        var name = body.name;
-        var value = body.value;
-        var encrypted = body.encrypted;
+        const env = envVars[envId];
+        const name = body.name;
+        const value = body.value;
+        const encrypted = body.encrypted;
 
         if (!env[name])
             env[name] = {};
@@ -58,7 +58,7 @@ router.post('/:envId', function (req, res, next) {
 
         res.status(200).json({ status: 200, message: 'OK' });
     } catch (ex) {
-        console.error(ex);
+        error(ex);
         res.status(500).json({ message: ex.message });
     }
 });

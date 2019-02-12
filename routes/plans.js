@@ -1,27 +1,28 @@
 'use strict';
 
-var express = require('express');
-var fs = require('fs');
-var path = require('path');
-var router = express.Router();
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const router = express.Router();
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:plans');
 
-var utils = require('./utils');
-var pluginUtils = require('./pluginUtils');
+const utils = require('./utils');
+const pluginUtils = require('./pluginUtils');
 
 router.get('/', function (req, res, next) {
-    var plans = utils.loadPlans(req.app);
-    var glob = utils.loadGlobals(req.app);
-    var groups = utils.loadGroups(req.app); 
+    const plans = utils.loadPlans(req.app);
+    const glob = utils.loadGlobals(req.app);
+    const groups = utils.loadGroups(req.app);
 
     // Make the config UI friendly
-    var hasPlanWithApproval = false;
-    for (var i=0; i<plans.plans.length; ++i) {
+    let hasPlanWithApproval = false;
+    for (let i = 0; i < plans.plans.length; ++i) {
         //plans.plans[i].configString = JSON.stringify(plans.plans[i].config, null, 2);
         plans.plans[i].config.plugins = pluginUtils.makeViewModel(plans.plans[i].config.plugins);
         if (plans.plans[i].needsApproval)
             hasPlanWithApproval = true;
     }
-    
+
     res.render('plans',
         {
             configPath: req.app.get('config_path'),
@@ -33,15 +34,15 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/', function (req, res, next) {
-    
-    var redirect = req.body.redirect;
 
-    var body = utils.jsonifyBody(req.body);
-    var plans = {
+    const redirect = req.body.redirect;
+
+    const body = utils.jsonifyBody(req.body);
+    const plans = {
         plans: body.plans
     };
 
-    for (var i=0; i<plans.plans.length; ++i) {
+    for (let i = 0; i < plans.plans.length; ++i) {
         if (plans.plans[i].requiredGroup == '<none>')
             delete plans.plans[i].requiredGroup;
         plans.plans[i].config.plugins = pluginUtils.makePluginsArray(plans.plans[i].config.plugins);
@@ -59,14 +60,14 @@ router.post('/', function (req, res, next) {
         });
     }
     if ("deletePlan" == body.__action) {
-        var index = Number(body.__object);
+        const index = Number(body.__object);
         plans.plans.splice(index, 1);
     }
-    
+
     utils.savePlans(req.app, plans);
 
     // Write changes to Kickstarter.json
-    var kickstarter = utils.loadKickstarter(req.app);
+    const kickstarter = utils.loadKickstarter(req.app);
     kickstarter.plans = 3;
     utils.saveKickstarter(req.app, kickstarter);
 

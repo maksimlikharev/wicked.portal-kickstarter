@@ -1,10 +1,11 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
-var envReader = require('portal-env');
+const express = require('express');
+const router = express.Router();
+const envReader = require('portal-env');
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:api:glob');
 
-var utils = require('../utils');
+const utils = require('../utils');
 
 router.get('/', function (req, res, next) {
     const glob = utils.loadGlobals();

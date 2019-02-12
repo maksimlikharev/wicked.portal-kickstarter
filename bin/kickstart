@@ -2,21 +2,22 @@
 
 'use strict';
 
+/* eslint-disable no-console */
+
 /**
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('portal-kickstarter:server');
-var http = require('http');
-var envReader = require('portal-env'); // local dependency, in node_modules via package.json
+const app = require('../app');
+const http = require('http');
+const envReader = require('portal-env'); // local dependency, in node_modules via package.json
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:kickstart');
 
-var utils = require('../routes/utils');
+const utils = require('../routes/utils');
 
 // Command line parameters.
-var path = require('path');
-var fs = require('fs-extra');
-var yaml = require('js-yaml');
+const path = require('path');
+const fs = require('fs-extra');
 
 if (process.argv.length < 3) {
     console.log("Usage:");
@@ -47,16 +48,16 @@ if (process.argv.length == 3) {
     }
 }
 
-var configPath;
-var basePath;
+let configPath;
+let basePath;
 
 if (process.argv.length == 4) {
-    var parameter = process.argv[2];
+    const parameter = process.argv[2];
     if (parameter != '--new') {
-        console.log("Expected parameter '--new', received '" + parameter +"'.");
+        console.log("Expected parameter '--new', received '" + parameter + "'.");
         process.exit(1);
     }
-    
+
     basePath = process.argv[3];
 
     if (fs.existsSync(path.join(basePath, 'static', 'globals.json'))) {
@@ -64,25 +65,25 @@ if (process.argv.length == 4) {
         process.exit(1);
     }
 
-    console.log('Creating a new configuration directory...');
+    info('Creating a new configuration directory...');
     configPath = path.join(basePath, 'static');
     if (!fs.existsSync(configPath)) {
         fs.mkdirSync(configPath);
     }
 
     // Now copy the initial-config to the destination path.
-    var initialConfigPath = envReader.getInitialConfigPath();
+    const initialConfigPath = envReader.getInitialConfigPath();
     fs.copySync(initialConfigPath, configPath);
 
     // Create an envkey file
-    console.log('Setting up a new deploy.envkey...');
-    var deployKey = envReader.Crypt.createRandomId();
+    info('Setting up a new deploy.envkey...');
+    const deployKey = envReader.Crypt.createRandomId();
     fs.writeFileSync(path.join(configPath, 'deploy.envkey'), deployKey, 'utf8');
 
-    console.log('Setting up PORTAL_API_AESKEY for API keys at rest...');
+    info('Setting up PORTAL_API_AESKEY for API keys at rest...');
     // Define an AES key for subscription keys at rest as well
-    var defaultJsonFile = path.join(configPath, 'env', 'default.json');
-    var defaultJson = JSON.parse(fs.readFileSync(defaultJsonFile, 'utf8'));
+    const defaultJsonFile = path.join(configPath, 'env', 'default.json');
+    const defaultJson = JSON.parse(fs.readFileSync(defaultJsonFile, 'utf8'));
     defaultJson.PORTAL_API_AESKEY = {
         encrypted: true,
         value: envReader.Crypt.apiEncrypt(deployKey, envReader.Crypt.createRandomId())
@@ -90,18 +91,18 @@ if (process.argv.length == 4) {
     fs.writeFileSync(defaultJsonFile, JSON.stringify(defaultJson, null, 2), 'utf8');
 
     const fileFilter = '*envkey\n.DS_Store\ncerts\ndynamic\n';
-    console.log('Creating a .gitignore file...');
+    info('Creating a .gitignore file...');
     fs.writeFileSync(path.join(basePath, '.gitignore'), fileFilter, 'utf8');
-    console.log('Creating a .dockerignore file...');
+    info('Creating a .dockerignore file...');
     fs.writeFileSync(path.join(configPath, '.dockerignore'), fileFilter, 'utf8');
 
-    console.log('Done.');
+    info('Done.');
 } else {
     basePath = process.argv[2];
     configPath = path.join(basePath, 'static');
 }
 
-var globalConfigFile = path.join(configPath, 'globals.json');
+const globalConfigFile = path.join(configPath, 'globals.json');
 // Verify the configuration repository.
 if (!fs.existsSync(globalConfigFile)) {
     console.log("Expected 'globals.json' in directory '" + configPath + "'.");
@@ -110,22 +111,22 @@ if (!fs.existsSync(globalConfigFile)) {
 }
 
 // Verify that we have a config key
-var configKeyFileName = findEnvKeyFileName(configPath);
+let configKeyFileName = findEnvKeyFileName(configPath);
 if (!configKeyFileName) {
-    console.log('Did not find a *.envkey file in the configuration path. Creating a new one.');
-    console.log('Setting up a new deploy.envkey...');
+    warn('Did not find a *.envkey file in the configuration path. Creating a new one.');
+    warn('Setting up a new deploy.envkey...');
     configKeyFileName = path.join(configPath, 'deploy.envkey');
     fs.writeFileSync(configKeyFileName, envReader.Crypt.createRandomId(), 'utf8');
 }
 
-console.log('Found config key file ' + configKeyFileName);
-var configKey = fs.readFileSync(configKeyFileName, 'utf8').trim();
+info('Found config key file ' + configKeyFileName);
+const configKey = fs.readFileSync(configKeyFileName, 'utf8').trim();
 
 // Check if we need to update the static DB?
 try {
     envReader.updateConfig(configPath, utils.getInitialStaticConfigDir(), configKey);
 } catch (dbErr) {
-    console.error(dbErr);
+    error(dbErr);
     throw Error("The Configuration update steps failed. Check log files for details.");
 }
 
@@ -139,14 +140,14 @@ app.set('config_key', configKey);
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3333');
+const port = normalizePort(process.env.PORT || '3333');
 app.set('port', port);
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+const server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -161,7 +162,7 @@ server.on('listening', onListening);
  */
 
 function normalizePort(val) {
-    var port = parseInt(val, 10);
+    const port = parseInt(val, 10);
 
     if (isNaN(port)) {
         // named pipe
@@ -185,8 +186,8 @@ function onError(error) {
         throw error;
     }
 
-    var bind = typeof port === 'string' ?
-        'Pipe ' + port : 
+    const bind = typeof port === 'string' ?
+        'Pipe ' + port :
         'Port ' + port;
 
     // handle specific listen errors with friendly messages
@@ -209,20 +210,20 @@ function onError(error) {
  */
 
 function onListening() {
-    var addr = server.address();
-    var bind = typeof addr === 'string' ?
-        'pipe ' + addr : 
+    const addr = server.address();
+    const bind = typeof addr === 'string' ?
+        'pipe ' + addr :
         'port ' + addr.port;
     debug('Listening on ' + bind);
-    console.log("Kickstarter running. Browse to http://localhost:" + port);
-    console.log("--> To shut down, use the 'shutdown' icon on the web page or press Ctrl-C.");
+    info("Kickstarter running. Browse to http://localhost:" + port);
+    info("--> To shut down, use the 'shutdown' icon on the web page or press Ctrl-C.");
 }
 
 function findEnvKeyFileName(baseDir) {
-    var fileNames = fs.readdirSync(baseDir); 
-    for (var i=0; i<fileNames.length; ++i) {
-        var fileName = fileNames[i];
-        if (/[a-zA-Z0-9\._]*envkey/.test(fileName))
+    const fileNames = fs.readdirSync(baseDir);
+    for (let i = 0; i < fileNames.length; ++i) {
+        const fileName = fileNames[i];
+        if (/[a-zA-Z0-9\._]*envkey/.test(fileName)) // eslint-disable-line
             return path.join(baseDir, fileName);
     }
     return null;

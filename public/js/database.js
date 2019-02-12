@@ -1,3 +1,5 @@
+/* global Vue, $, injectedData */
+
 Vue.component('wicked-database', {
     props: ['value'],
     template: `

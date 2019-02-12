@@ -1,15 +1,17 @@
 'use strict';
 
-var assert = require('chai').assert;
-var utils = require('../routes/utils');
+/* global describe, it */
+
+const assert = require('chai').assert;
+const utils = require('../routes/utils');
 
 describe('utils.js:', function () {
     describe('mixinEnv()', function () {
         it('should mix in simple cases of env variables', function () {
-            var ob = {
+            const ob = {
                 something: "$SOMETHING"
             };
-            var envVars = {
+            const envVars = {
                 default: {
                     SOMETHING: { value: "else" }
                 }
@@ -21,7 +23,7 @@ describe('utils.js:', function () {
         });
 
         it('should mix in nested objects', function () {
-            var ob = {
+            const ob = {
                 nest: {
                     something: "$SOMETHING"
                 },
@@ -33,7 +35,7 @@ describe('utils.js:', function () {
                 }
             };
 
-            var envVars = {
+            const envVars = {
                 default: {
                     SOMETHING: { value: 'else' },
                     VALUE1: { value: 'replace1' },
@@ -52,7 +54,7 @@ describe('utils.js:', function () {
         });
 
         it('should work with simple arrays', function () {
-            var ob = {
+            const ob = {
                 someList: [
                     "$SOMETHING",
                     "$VALUE1",
@@ -60,7 +62,7 @@ describe('utils.js:', function () {
                 ]
             };
 
-            var envVars = {
+            const envVars = {
                 default: {
                     SOMETHING: { value: 'else' },
                     VALUE1: { value: 'replace1' },
@@ -76,7 +78,7 @@ describe('utils.js:', function () {
         });
 
         it('should work with arrays of objects', function () {
-            var ob = {
+            const ob = {
                 someList: [
                     { meh: "$SOMETHING" },
                     { meh: "$VALUE1" },
@@ -84,7 +86,7 @@ describe('utils.js:', function () {
                 ]
             };
 
-            var envVars = {
+            const envVars = {
                 default: {
                     SOMETHING: { value: 'else' },
                     VALUE1: { value: 'replace1' },
@@ -103,7 +105,7 @@ describe('utils.js:', function () {
         });
 
         it('should work with arrays of objects with arrays in them (who does that?)', function () {
-            var ob = {
+            const ob = {
                 someList: [
                     { meh: ["$SOMETHING"] },
                     { meh: ["$VALUE1", "$SOMETHING"] },
@@ -111,7 +113,7 @@ describe('utils.js:', function () {
                 ]
             };
 
-            var envVars = {
+            const envVars = {
                 default: {
                     SOMETHING: { value: 'else' },
                     VALUE1: { value: 'replace1' },
@@ -130,12 +132,12 @@ describe('utils.js:', function () {
 
     describe('mixoutEnv()', function () {
         it('must mix out simple envs', function () {
-            var ob = {
+            const ob = {
                 something: 'else',
                 something_: true
             };
 
-            var envVars = {
+            const envVars = {
                 default: {}
             };
 
@@ -149,7 +151,7 @@ describe('utils.js:', function () {
         });
 
         it('must mix out more complicated envs', function () {
-            var ob = {
+            const ob = {
                 something: {
                     deeper: 'else',
                     deeper_: true
@@ -158,7 +160,7 @@ describe('utils.js:', function () {
                 elsewhere_: true
             };
 
-            var envVars = {
+            const envVars = {
                 default: {}
             };
 
@@ -174,7 +176,7 @@ describe('utils.js:', function () {
         });
 
         it('must mix out things in arrays', function () {
-            var ob = {
+            const ob = {
                 someList: [
                     {
                         meh: 'whetever',
@@ -187,7 +189,7 @@ describe('utils.js:', function () {
                 ]
             };
 
-            var envVars = {
+            const envVars = {
                 default: {}
             };
 

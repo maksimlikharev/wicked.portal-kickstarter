@@ -1,3 +1,5 @@
+/* global Vue, $, injectedData, randomId */
+
 Vue.component('wicked-pools', {
     props: ['value'],
     data: function () {

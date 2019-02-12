@@ -1,16 +1,17 @@
 'use strict';
 
-var express = require('express');
-var fs = require('fs');
-var path = require('path');
-var router = express.Router();
-var envReader = require('portal-env');
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const router = express.Router();
+const envReader = require('portal-env');
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:envs');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 router.get('/', function (req, res, next) {
-    var kickstarter = utils.loadKickstarter(req.app);
-    var envDict = utils.loadEnvDict(req.app);
+    const kickstarter = utils.loadKickstarter(req.app);
+    const envDict = utils.loadEnvDict(req.app);
 
     res.render('envs',
         {
@@ -21,12 +22,12 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/', function (req, res, next) {
-    var body = utils.jsonifyBody(req.body);
-    var kickstarter = utils.loadKickstarter(req.app);
-    console.log(body);
-    var newEnvId = body.new_env;
-    if (!/^[a-z0-9\-]+$/.test(newEnvId)) {
-        var err = new Error('Invalid environment name; must only contain a-z, 0-9 and hyphen (-).');
+    const body = utils.jsonifyBody(req.body);
+    const kickstarter = utils.loadKickstarter(req.app);
+    debug(body);
+    const newEnvId = body.new_env;
+    if (!/^[a-z0-9\-]+$/.test(newEnvId)) { // eslint-disable-line
+        const err = new Error('Invalid environment name; must only contain a-z, 0-9 and hyphen (-).');
         err.status = 400;
         throw err;
     }
@@ -34,18 +35,18 @@ router.post('/', function (req, res, next) {
     kickstarter.envs.push(newEnvId);
     kickstarter.env = 3;
     utils.saveKickstarter(req.app, kickstarter);
-    
+
     res.redirect('/envs/' + newEnvId);
 });
 
 router.get('/:envId', function (req, res, next) {
-    var usedEnvVars = {};
+    const usedEnvVars = {};
     envReader.gatherEnvVarsInDir(req.app.get('config_path'), usedEnvVars);
     usedEnvVars.PORTAL_API_AESKEY = ['(implicit)'];
 
-    var envDict = utils.loadEnvDict(req.app, usedEnvVars);
-    var envId = req.params.envId;
-    // console.log(usedEnvVars);
+    const envDict = utils.loadEnvDict(req.app, usedEnvVars);
+    const envId = req.params.envId;
+    // debug(usedEnvVars);
 
     res.render('env',
         {
@@ -57,12 +58,12 @@ router.get('/:envId', function (req, res, next) {
 });
 
 router.post('/:envId', function (req, res, next) {
-    var envId = req.params.envId;
-    var body = utils.jsonifyBody(req.body);
-    //console.log(body);
+    const envId = req.params.envId;
+    const body = utils.jsonifyBody(req.body);
+    //debug(body);
 
-    var envDict = utils.loadEnvDict(req.app);
-    var updateDict = {};
+    const envDict = utils.loadEnvDict(req.app);
+    const updateDict = {};
     for (let propName in body) {
         let prop = body[propName];
         if (envId != 'default' &&
@@ -77,17 +78,17 @@ router.post('/:envId', function (req, res, next) {
     envDict[envId] = updateDict;
 
     // Any deleted env vars?
-    var saveAll = false;
+    let saveAll = false;
     if (envId == 'default') {
         for (let propName in body) {
             let prop = body[propName];
             if (!prop.deleted)
                 continue;
-            console.log('Deleting env var ' + propName);
+            info('Deleting env var ' + propName);
             for (let envName in envDict) {
                 let env = envDict[envName];
                 if (env[propName]) {
-                    console.log(' * in environment ' + envName);
+                    info(' * in environment ' + envName);
                     delete env[propName];
                     saveAll = true;
                 }
@@ -95,12 +96,12 @@ router.post('/:envId', function (req, res, next) {
         }
     }
 
-    //console.log(envDict["default"]);
+    //debug(envDict["default"]);
 
     if (!saveAll) {
         utils.saveEnvDict(req.app, envDict, envId);
     } else {
-        for (var envName in envDict)
+        for (let envName in envDict)
             utils.saveEnvDict(req.app, envDict, envName);
     }
 
@@ -109,10 +110,10 @@ router.post('/:envId', function (req, res, next) {
 
 router.post('/:envId/delete', function (req, res, next) {
     // I hope the user knows what he's doing. But there's always git.
-    var envId = req.params.envId;
-    var kickstarter = utils.loadKickstarter(req.app);
-    var newEnvs = [];
-    for (var i=0; i<kickstarter.envs.length; ++i) {
+    const envId = req.params.envId;
+    const kickstarter = utils.loadKickstarter(req.app);
+    const newEnvs = [];
+    for (let i = 0; i < kickstarter.envs.length; ++i) {
         if (kickstarter.envs[i] == envId)
             continue;
         newEnvs.push(kickstarter.envs[i]);

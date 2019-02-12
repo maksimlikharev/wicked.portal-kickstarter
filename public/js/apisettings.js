@@ -1,3 +1,5 @@
+/* global Vue, $, injectedData */
+
 Vue.component('wicked-api', {
     props: ['value', 'authMethods', 'groups', 'plans', 'pools', 'envPrefix'],
     data: function () {
@@ -21,7 +23,7 @@ Vue.component('wicked-api', {
             $('#new_scope_input').focus();
         },
         isValidScopeId: function (scopeId) {
-            return /^[a-z0-9-_\:]+$/.test(scopeId);
+            return /^[a-z0-9-_\:]+$/.test(scopeId); // eslint-disable-line
         },
         focusDescription: function () {
             $('#new_scope_desc').focus();

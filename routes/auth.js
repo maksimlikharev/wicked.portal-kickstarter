@@ -1,9 +1,10 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:auth');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 router.get('/', function (req, res, next) {
     res.redirect('/authservers');
@@ -28,8 +29,8 @@ router.get('/', function (req, res, next) {
 //     glob.auth = body.glob.auth;
     
 //     utils.mixoutEnv(glob, envVars);
-//     console.log(glob);
-//     console.log(envVars);
+//     debug(glob);
+//     debug(envVars);
 
 //     utils.saveGlobals(req.app, glob);
 //     utils.saveEnvDict(req.app, envVars, "default");

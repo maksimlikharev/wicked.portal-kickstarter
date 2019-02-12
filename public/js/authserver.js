@@ -1,3 +1,5 @@
+/* global Vue, $, injectedData */
+
 Vue.component('auth-server', {
     props: ['value', 'envPrefix', 'serverId', 'groups'],
     methods: {
@@ -75,7 +77,7 @@ Vue.component('auth-method', {
         deleteGroupMapping: function (adfsGroup) {
             this.$delete(this.value.config.defaultGroups, adfsGroup);
         },
-        addGroupMapping: function(adfsGroup, wickedGroup) {
+        addGroupMapping: function (adfsGroup, wickedGroup) {
             this.newAdfsGroup = '';
             this.newWickedGroup = '';
             this.$set(this.value.config.defaultGroups, adfsGroup, wickedGroup);
@@ -209,7 +211,7 @@ Vue.component('add-auth-method', {
     },
     computed: {
         authMethodIdValid: function () {
-            return /^[a-z0-9\_-]+$/.test(this.authMethodId);
+            return /^[a-z0-9\_-]+$/.test(this.authMethodId); // eslint-disable-line
         }
     },
     methods: {
@@ -320,8 +322,8 @@ function createDefaultConfig(authMethodType, authMethodId) {
                     "DOMAIN\\_Some_Group": "dev"
                 }
             };
-        case 'saml':
-            const envVarPrefix = '$PORTAL_AUTH_SAML_' + authMethodId.toUpperCase().replace(/\-/g, '_') + '_';
+        case 'saml': {
+            const envVarPrefix = '$PORTAL_AUTH_SAML_' + authMethodId.toUpperCase().replace(/-/g, '_') + '_';
             return {
                 trustUsers: true,
                 profile: JSON.stringify({
@@ -348,6 +350,7 @@ function createDefaultConfig(authMethodType, authMethodId) {
                     "allow_unencrypted_assertion": true
                 }, null, 2)
             };
+        }
         default:
             return {};
     }

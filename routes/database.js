@@ -1,16 +1,17 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
-var path = require('path');
+const express = require('express');
+const router = express.Router();
+const path = require('path');
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:database');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 router.get('/', function (req, res, next) {
-    var glob = utils.loadGlobals(req.app);
+    const glob = utils.loadGlobals(req.app);
     
-    // var localStaticPath = req.app.get('config_path');
-    // var localDynamicPath = path.join(path.join(localStaticPath, '..'), 'dynamic');
+    // const localStaticPath = req.app.get('config_path');
+    // const localDynamicPath = path.join(path.join(localStaticPath, '..'), 'dynamic');
     
     res.render('database',
         {
@@ -22,8 +23,8 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/api', function (req, res, next) {
-    var body = utils.jsonifyBody(req.body);
-    var glob = utils.loadGlobals(req.app);
+    const body = utils.jsonifyBody(req.body);
+    const glob = utils.loadGlobals(req.app);
 
     glob.storage = body.glob.storage;
     glob.sessionStore = body.glob.sessionStore;
@@ -31,7 +32,7 @@ router.post('/api', function (req, res, next) {
     utils.saveGlobals(req.app, glob);
 
     // Write changes to Kickstarter.json
-    var kickstarter = utils.loadKickstarter(req.app);
+    const kickstarter = utils.loadKickstarter(req.app);
     kickstarter.database = 3;
     utils.saveKickstarter(req.app, kickstarter);
 

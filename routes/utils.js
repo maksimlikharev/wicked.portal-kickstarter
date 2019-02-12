@@ -1,16 +1,19 @@
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var crypto = require('crypto');
-var mustache = require('mustache');
-var execSync = require('child_process').execSync;
-var envReader = require('portal-env');
+/* global __dirname */
 
-var utils = function () { };
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const mustache = require('mustache');
+const execSync = require('child_process').execSync;
+const envReader = require('portal-env');
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:utils');
+
+const utils = function () { };
 
 utils.makeError = function (statusCode, errorText) {
-    var err = new Error(errorText);
+    const err = new Error(errorText);
     err.status = statusCode;
     return err;
 };
@@ -22,8 +25,8 @@ utils.getJson = function (ob) {
 };
 
 utils.jsonifyBody = function (reqBody) {
-    var body = {};
-    for (var prop in reqBody) {
+    const body = {};
+    for (let prop in reqBody) {
         applyProperty(body, prop, reqBody[prop]);
     }
     return body;
@@ -34,14 +37,14 @@ utils.createRandomId = function () {
 };
 
 function applyProperty(to, propName, value) {
-    var subPropNames = propName.split('.');
-    var current = to;
-    for (var i = 0; i < subPropNames.length; ++i) {
-        var thisProp = subPropNames[i];
-        var bracketPos = thisProp.indexOf('[');
+    const subPropNames = propName.split('.');
+    let current = to;
+    for (let i = 0; i < subPropNames.length; ++i) {
+        let thisProp = subPropNames[i];
+        const bracketPos = thisProp.indexOf('[');
         // Array case
         if (bracketPos >= 0) {
-            var index = Number(thisProp.substring(bracketPos + 1, thisProp.length - 1));
+            let index = Number(thisProp.substring(bracketPos + 1, thisProp.length - 1));
             thisProp = thisProp.substring(0, bracketPos);
             if (!current.hasOwnProperty(thisProp))
                 current[thisProp] = [];
@@ -51,9 +54,9 @@ function applyProperty(to, propName, value) {
                 current = current[thisProp][index];
             } else {
                 //current[thisProp][index] = value;
-                var str_array = value.split(',');
+                const str_array = value.split(',');
                 if (str_array.length > 1) {
-                    for (var j = 0; j < str_array.length; j++) {
+                    for (let j = 0; j < str_array.length; j++) {
                         current[thisProp][index++] = str_array[j];
                     }
                 } else {
@@ -87,8 +90,8 @@ utils.unpackObjects = (ob) => {
                     const innerOb = JSON.parse(v);
                     ob[p] = innerOb;
                 } catch (err) {
-                    console.error('Could not parse JSON string:');
-                    console.error(v);
+                    error('Could not parse JSON string:');
+                    error(v);
                 }
             }
         } else if (typeof v === 'object') {
@@ -104,18 +107,18 @@ utils.isString = function (ob) {
 };
 
 function replaceVar(ob, propName, envVars) {
-    var value = ob[propName];
+    const value = ob[propName];
     if (!value.startsWith('$'))
         return;
-    var defaultEnv = envVars["default"];
-    var envVar = value.substring(1);
+    const defaultEnv = envVars["default"];
+    const envVar = value.substring(1);
     if (defaultEnv.hasOwnProperty(envVar)) {
         ob[propName] = defaultEnv[envVar].value;
         // Mark it as taken from env var
         ob[propName + '_'] = true;
         ob[propName + '__'] = defaultEnv[envVar].encrypted;
     } else {
-        console.log('Env var "' + envVar + '" is used, but does not exist in env var dictionary.');
+        warn('Env var "' + envVar + '" is used, but does not exist in env var dictionary.');
         ob[propName] = '';
         ob[propName + '_'] = true;
         ob[propName + '__'] = false; // Default to unencrypted
@@ -129,20 +132,20 @@ function getStringValue(origValue, envVars) {
     let defaultEnv = envVars["default"];
     if (defaultEnv.hasOwnProperty(envVar))
         return defaultEnv[envVar].value;
-    console.log('getStringValue("' + origValue + '", envVars): Env var is used, but does not exist in env var dictionary.');
+    warn('getStringValue("' + origValue + '", envVars): Env var is used, but does not exist in env var dictionary.');
     return '';
 }
 
 utils.mixinEnv = function (target, envVars) {
-    for (var prop in target) {
-        var value = target[prop];
+    for (let prop in target) {
+        const value = target[prop];
         if (utils.isString(value)) {
             // Do our thing here
             replaceVar(target, prop, envVars);
         } else if (Array.isArray(value)) {
             // Well well
-            for (var i = 0; i < value.length; ++i) {
-                var arrayValue = value[i];
+            for (let i = 0; i < value.length; ++i) {
+                const arrayValue = value[i];
                 if (utils.isString(arrayValue))
                     value[i] = getStringValue(arrayValue, envVars);
                 else if (!arrayValue)
@@ -160,10 +163,10 @@ utils.mixinEnv = function (target, envVars) {
 };
 
 function mixoutVar(prefix, ob, propName, envVars) {
-    var value = ob[propName];
+    const value = ob[propName];
     if (!ob[propName + '_'])
         return;
-    var envVarName = prefix + '_' + propName.toUpperCase();
+    let envVarName = prefix + '_' + propName.toUpperCase();
     switch (propName) {
         case "apiUrl": envVarName = 'PORTAL_API_URL'; break;
         case "portalUrl": envVarName = 'PORTAL_PORTAL_URL'; break;
@@ -177,7 +180,7 @@ function mixoutVar(prefix, ob, propName, envVars) {
     if (!envVars[envVarName])
         envVars[envVarName] = {};
     envVars[envVarName].value = value;
-    var encrypt = ob[propName + '__'];
+    const encrypt = ob[propName + '__'];
     envVars[envVarName].encrypted = encrypt;
     ob[propName] = '$' + envVarName;
     delete ob[propName + '_'];
@@ -185,18 +188,18 @@ function mixoutVar(prefix, ob, propName, envVars) {
 }
 
 function mixoutEnvInt(prefix, source, envVars) {
-    for (var prop in source) {
+    for (let prop in source) {
         if (prop.endsWith('_'))
             continue;
-        var value = source[prop];
+        const value = source[prop];
         if (utils.isString(value)) {
             // Do our thing here
             mixoutVar(prefix, source, prop, envVars);
         } else if (Array.isArray(value)) {
             // Well well
             //console.log(value);
-            for (var i = 0; i < value.length; ++i) {
-                var arrayValue = value[i];
+            for (let i = 0; i < value.length; ++i) {
+                const arrayValue = value[i];
                 //console.log(arrayValue);
                 if (utils.isString(arrayValue)) {
                     // nop
@@ -238,13 +241,13 @@ function getResDir() {
 }
 
 function getGlobalsFileName(app) {
-    var configDir = getConfigDir(app);
-    var globalsFileName = path.join(configDir, 'globals.json');
+    const configDir = getConfigDir(app);
+    const globalsFileName = path.join(configDir, 'globals.json');
     return globalsFileName;
 }
 
 utils.loadGlobals = function (app) {
-    var g = JSON.parse(fs.readFileSync(getGlobalsFileName(app), 'utf8'));
+    const g = JSON.parse(fs.readFileSync(getGlobalsFileName(app), 'utf8'));
     if (!g.network)
         g.network = {};
     if (!g.network.apiUrl)
@@ -275,16 +278,16 @@ utils.saveGlobals = function (app, glob) {
 /*
 utils.loadEnv = function (app) {
     //return JSON.parse(fs.readFileSync(app.get('env_file'), 'utf8'));
-    var envFile = fs.readFileSync(app.get('env_file'), 'utf8');
-    var lines = envFile.replace(/\r/g, '').split('\n');
-    var env = {};
-    for (var i = 0; i < lines.length; ++i) {
-        var line = lines[i];
+    const envFile = fs.readFileSync(app.get('env_file'), 'utf8');
+    const lines = envFile.replace(/\r/g, '').split('\n');
+    const env = {};
+    for (let i = 0; i < lines.length; ++i) {
+        const line = lines[i];
         if (!line)
             continue;
-        var eq = line.indexOf('=');
-        var envVar = line.substring(0, eq);
-        var rest = line.substring(eq + 1).trim();
+        const eq = line.indexOf('=');
+        const envVar = line.substring(0, eq);
+        const rest = line.substring(eq + 1).trim();
         if (rest.startsWith('$'))
             rest = rest.substring(1);
         if (rest.startsWith('"') || rest.startsWith("'"))
@@ -306,7 +309,7 @@ utils.jsonClone = function (ob) {
     return JSON.parse(JSON.stringify(ob));
 };
 
-var BUILTIN_ENVVARS = {
+const BUILTIN_ENVVARS = {
     'LOCAL_IP': true,
     'LOCAL_API_HOST': true,
     'LOCAL_PORTAL_HOST': true,
@@ -329,7 +332,7 @@ utils.loadEnvDict = function (app, usedEnvVars) {
         envDict[envName] = JSON.parse(fs.readFileSync(envFileName, 'utf8'));
     }
     decryptEnvDict(app, envDict);
-    var defaultEnv = envDict["default"];
+    const defaultEnv = envDict["default"];
 
     if (usedEnvVars) {
         // Check if we have used env vars which are not yet in the
@@ -338,7 +341,7 @@ utils.loadEnvDict = function (app, usedEnvVars) {
             if (BUILTIN_ENVVARS.hasOwnProperty(propName))
                 continue;
             if (!defaultEnv.hasOwnProperty(propName)) {
-                console.log('Picked up new env var ' + propName);
+                info('Picked up new env var ' + propName);
                 defaultEnv[propName] = {
                     encrypted: false,
                     value: 'new property\nedit value'
@@ -382,7 +385,7 @@ utils.loadEnvDict = function (app, usedEnvVars) {
     for (let propName in defaultEnv)
         propNames.push(propName);
     propNames.sort();
-    var tempDict = {};
+    const tempDict = {};
 
     // Reinsert all the properties for all envs in the right order.
     for (let envName in envDict) {
@@ -396,10 +399,10 @@ utils.loadEnvDict = function (app, usedEnvVars) {
 };
 
 function decryptEnvDict(app, envDict) {
-    for (var envName in envDict) {
-        var env = envDict[envName];
-        for (var propName in env) {
-            var prop = env[propName];
+    for (let envName in envDict) {
+        const env = envDict[envName];
+        for (let propName in env) {
+            const prop = env[propName];
             if (prop.encrypted)
                 prop.value = envReader.Crypt.apiDecrypt(getConfigKey(app), prop.value);
         }
@@ -407,32 +410,32 @@ function decryptEnvDict(app, envDict) {
 }
 
 utils.saveEnvDict = function (app, envDict, envName) {
-    var env = envDict[envName];
+    const env = envDict[envName];
     cleanupEnv(env);
     encryptEnv(app, env);
-    var envFileName = path.join(getConfigDir(app), 'env', envName + '.json');
+    const envFileName = path.join(getConfigDir(app), 'env', envName + '.json');
     fs.writeFileSync(envFileName, JSON.stringify(env, null, 2), 'utf8');
 };
 
 function cleanupEnv(env) {
     // Clean up inherited values
-    for (var propName in env) {
-        var prop = env[propName];
+    for (let propName in env) {
+        const prop = env[propName];
         if (prop && prop.inherited)
             delete env[propName];
     }
 }
 
 function encryptEnv(app, env) {
-    for (var propName in env) {
-        var prop = env[propName];
+    for (let propName in env) {
+        const prop = env[propName];
         if (prop.encrypted)
             prop.value = envReader.Crypt.apiEncrypt(getConfigKey(app), prop.value);
     }
 }
 
 utils.deleteEnv = function (app, envId) {
-    var envFileName = path.join(getConfigDir(app), 'env', envId + '.json');
+    const envFileName = path.join(getConfigDir(app), 'env', envId + '.json');
     if (fs.existsSync(envFileName))
         fs.unlinkSync(envFileName);
 };
@@ -463,8 +466,8 @@ utils.createEnv = function (app, newEnvId) {
 
 /*
 function writeEnvFile(envFileName, envVars) {
-    var envString = '';
-    for (var name in envVars) {
+    const envString = '';
+    for (let name in envVars) {
         envString += name + "=$'";
         envString += escape(envVars[name]) + "'\n";
     }
@@ -485,9 +488,9 @@ function unescape(s) {
 }
 
 function getPlansFileName(app) {
-    var configDir = getConfigDir(app);
-    var plansDir = path.join(configDir, 'plans');
-    var plansFile = path.join(plansDir, 'plans.json');
+    const configDir = getConfigDir(app);
+    const plansDir = path.join(configDir, 'plans');
+    const plansFile = path.join(plansDir, 'plans.json');
     return plansFile;
 }
 
@@ -500,9 +503,9 @@ utils.savePlans = function (app, plans) {
 };
 
 function getGroupsFileName(app) {
-    var configDir = getConfigDir(app);
-    var groupsDir = path.join(configDir, 'groups');
-    var groupsFile = path.join(groupsDir, 'groups.json');
+    const configDir = getConfigDir(app);
+    const groupsDir = path.join(configDir, 'groups');
+    const groupsFile = path.join(groupsDir, 'groups.json');
     return groupsFile;
 }
 
@@ -515,9 +518,9 @@ utils.saveGroups = function (app, groups) {
 };
 
 function getApisFileName(app) {
-    var configDir = getConfigDir(app);
-    var apisDir = path.join(configDir, 'apis');
-    var apisFileName = path.join(apisDir, 'apis.json');
+    const configDir = getConfigDir(app);
+    const apisDir = path.join(configDir, 'apis');
+    const apisFileName = path.join(apisDir, 'apis.json');
     return apisFileName;
 }
 
@@ -553,21 +556,21 @@ utils.saveApis = function (app, apis) {
 };
 
 function getApiDir(app, apiId) {
-    var configDir = getConfigDir(app);
-    var apisDir = path.join(configDir, 'apis');
-    var apiDir = path.join(apisDir, apiId);
+    const configDir = getConfigDir(app);
+    const apisDir = path.join(configDir, 'apis');
+    const apiDir = path.join(apisDir, apiId);
     return apiDir;
 }
 
 utils.prepareNewApi = function (app, apiId) {
-    var apiDir = getApiDir(app, apiId);
+    const apiDir = getApiDir(app, apiId);
     if (!fs.existsSync(apiDir))
         fs.mkdirSync(apiDir);
     else {
-        console.log("utils.prepareNewApi: API already exists.");
+        error("utils.prepareNewApi: API already exists.");
         return;
     }
-    var apiConfig = {
+    const apiConfig = {
         api: {
             upstream_url: "http://your.new.api/",
             name: apiId,
@@ -577,7 +580,7 @@ utils.prepareNewApi = function (app, apiId) {
         },
         plugins: []
     };
-    var apiSwagger = {
+    const apiSwagger = {
         swagger: "2.0",
         info: {
             title: apiId,
@@ -601,12 +604,12 @@ utils.prepareNewApi = function (app, apiId) {
 };
 
 utils.removeApiDir = function (app, apiId) {
-    var apiDir = getApiDir(app, apiId);
+    const apiDir = getApiDir(app, apiId);
     if (!fs.existsSync(apiDir))
         return; // ?
-    var configFile = path.join(apiDir, 'config.json');
-    var swaggerFile = path.join(apiDir, 'swagger.json');
-    var descFile = path.join(apiDir, 'desc.md');
+    const configFile = path.join(apiDir, 'config.json');
+    const swaggerFile = path.join(apiDir, 'swagger.json');
+    const descFile = path.join(apiDir, 'desc.md');
 
     if (fs.existsSync(configFile))
         fs.unlinkSync(configFile);
@@ -618,8 +621,8 @@ utils.removeApiDir = function (app, apiId) {
 };
 
 function getSwaggerFileName(app, apiId) {
-    var apiDir = getApiDir(app, apiId);
-    var swaggerFileName = path.join(apiDir, 'swagger.json');
+    const apiDir = getApiDir(app, apiId);
+    const swaggerFileName = path.join(apiDir, 'swagger.json');
     return swaggerFileName;
 }
 
@@ -629,7 +632,7 @@ utils.existsSwagger = function (app, apiId) {
 };
 
 utils.loadSwagger = function (app, apiId) {
-    console.log('apiId: ' + apiId);
+    debug('apiId: ' + apiId);
     // Hmmm... what if this thing is not valid JSON?
     return JSON.parse(fs.readFileSync(getSwaggerFileName(app, apiId), 'utf8'));
 };
@@ -642,38 +645,38 @@ utils.saveSwagger = function (app, apiId, swagger) {
 };
 
 utils.loadApiDesc = function (app, apiId) {
-    var apiDir = getApiDir(app, apiId);
-    var apiDescFile = path.join(apiDir, 'desc.md');
+    const apiDir = getApiDir(app, apiId);
+    const apiDescFile = path.join(apiDir, 'desc.md');
     if (!fs.existsSync(apiDescFile))
         return '';
     return fs.readFileSync(apiDescFile, 'utf8');
 };
 
 utils.saveApiDesc = function (app, apiId, markdown) {
-    var apiDir = getApiDir(app, apiId);
-    var apiDescFile = path.join(apiDir, 'desc.md');
+    const apiDir = getApiDir(app, apiId);
+    const apiDescFile = path.join(apiDir, 'desc.md');
     fs.writeFileSync(apiDescFile, markdown, 'utf8');
 };
 
 utils.loadApiConfig = function (app, apiId) {
-    var apiDir = getApiDir(app, apiId);
-    var configFileName = path.join(apiDir, 'config.json');
+    const apiDir = getApiDir(app, apiId);
+    const configFileName = path.join(apiDir, 'config.json');
     return JSON.parse(fs.readFileSync(configFileName, 'utf8'));
 };
 
 utils.saveApiConfig = function (app, apiId, config) {
-    var apiDir = getApiDir(app, apiId);
-    var configFileName = path.join(apiDir, 'config.json');
+    const apiDir = getApiDir(app, apiId);
+    const configFileName = path.join(apiDir, 'config.json');
     fs.writeFileSync(configFileName, JSON.stringify(config, null, 2), 'utf8');
 };
 
 function getContentDir(app) {
-    var configDir = getConfigDir(app);
+    const configDir = getConfigDir(app);
     return path.join(configDir, 'content');
 }
 
 function getCssFileName(app) {
-    var contentDir = getContentDir(app);
+    const contentDir = getContentDir(app);
     return path.join(contentDir, 'wicked.css');
 }
 
@@ -712,14 +715,14 @@ utils.getContentType = function (uriName) {
 };
 
 utils.getContentFileName = function (app, pathUri) {
-    var contentDir = getContentDir(app);
+    const contentDir = getContentDir(app);
     if (pathUri.startsWith('/content/'))
         pathUri = pathUri.substring(9);
     return path.join(contentDir, pathUri);
 };
 
 utils.getContentIndexFileName = function (app) {
-    var configDir = getConfigDir(app);
+    const configDir = getConfigDir(app);
     return path.join(configDir, 'index');
 };
 
@@ -743,23 +746,23 @@ function getContentItem(file, fileName, fullPath, pathUri) {
 }
 
 function getContentFileNamesRecursive(app, baseDir, dir, pathUris, publicUris) {
-    var forDir = baseDir;
+    let forDir = baseDir;
     if (dir)
         forDir = path.join(forDir, dir);
-    var fileNames = fs.readdirSync(forDir).sort();
+    const fileNames = fs.readdirSync(forDir).sort();
 
     //console.log(fileNames);
 
     // Files first
-    var dirNames = [];
+    const dirNames = [];
     for (let i = 0; i < fileNames.length; ++i) {
-        var file = path.join(forDir, fileNames[i]);
-        var fullPath = path.resolve(baseDir, file);
-        var stat = fs.statSync(file);
+        const file = path.join(forDir, fileNames[i]);
+        const fullPath = path.resolve(baseDir, file);
+        const stat = fs.statSync(file);
         if (stat.isDirectory())
             dirNames.push(fileNames[i]);
         if (stat.isFile()) {
-            var pathUriTemp = dir + '/' + fileNames[i];
+            const pathUriTemp = dir + '/' + fileNames[i];
             if (utils.isContent(file)) {
                 pathUris.push(getContentItem(file, fileNames[i], fullPath, pathUriTemp));
             } else if (utils.isPublic(file)) {
@@ -768,7 +771,7 @@ function getContentFileNamesRecursive(app, baseDir, dir, pathUris, publicUris) {
         }
     }
     for (let i = 0; i < dirNames.length; ++i) {
-        var subDir = '/' + dirNames[i];
+        let subDir = '/' + dirNames[i];
         if (dir)
             subDir = dir + subDir;
         getContentFileNamesRecursive(app, baseDir, subDir, pathUris, publicUris);
@@ -776,9 +779,9 @@ function getContentFileNamesRecursive(app, baseDir, dir, pathUris, publicUris) {
 }
 
 utils.getContentFileNames = function (app) {
-    var pathUris = [];
-    var publicUris = [];
-    var contentDir = getContentDir(app);
+    const pathUris = [];
+    const publicUris = [];
+    const contentDir = getContentDir(app);
     getContentFileNamesRecursive(app, contentDir, '', pathUris, publicUris);
     return {
         pathUris: pathUris,
@@ -787,20 +790,20 @@ utils.getContentFileNames = function (app) {
 };
 
 utils.createNewContent = function (app, newContent, contentType, callback) {
-    var contentDir = getContentDir(app);
-    var currentDir = contentDir;
-    var fileParts = newContent.split('/');
-    for (var i = 0; i < fileParts.length - 1; ++i) {
+    const contentDir = getContentDir(app);
+    let currentDir = contentDir;
+    const fileParts = newContent.split('/');
+    for (let i = 0; i < fileParts.length - 1; ++i) {
         currentDir = path.join(currentDir, fileParts[i]);
         fs.mkdirSync(currentDir);
     }
-    var fileBase = path.join(currentDir, fileParts[fileParts.length - 1]);
-    var contentFile;
+    const fileBase = path.join(currentDir, fileParts[fileParts.length - 1]);
+    let contentFile;
     if (contentType == 'markdown')
         contentFile = fileBase + '.md';
     else // jade
         contentFile = fileBase + '.jade';
-    var jsonFile = fileBase + '.json';
+    const jsonFile = fileBase + '.json';
 
     if (fs.existsSync(contentFile))
         return callback(utils.makeError(409, 'Conrtent file ' + contentFile + ' already exists.'));
@@ -811,7 +814,7 @@ utils.createNewContent = function (app, newContent, contentType, callback) {
         fs.writeFileSync(contentFile, '# Markdown Content', 'utf8');
     else
         fs.writeFileSync(contentFile, 'h1 Jade Content\r\n\r\np This is a paragraph.', 'utf8');
-    var jsonConfig = {
+    const jsonConfig = {
         title: 'New Content',
         subTitle: 'Edit the file with whatever editor you like, then change the settings using the Preview here.',
         showTitle: true,
@@ -823,7 +826,7 @@ utils.createNewContent = function (app, newContent, contentType, callback) {
 };
 
 utils.getInitialConfigDir = function () {
-    var appDir = path.join(__dirname, '..', 'node_modules', 'portal-env');
+    const appDir = path.join(__dirname, '..', 'node_modules', 'portal-env');
     return path.join(appDir, 'initial-config');
 };
 
@@ -832,8 +835,8 @@ utils.getInitialStaticConfigDir = function () {
 };
 
 function getTemplatesDir(app) {
-    var configDir = getConfigDir(app);
-    var templatesDir = path.join(configDir, 'templates');
+    const configDir = getConfigDir(app);
+    const templatesDir = path.join(configDir, 'templates');
     return templatesDir;
 }
 
@@ -850,10 +853,10 @@ utils.saveChatbotTemplates = function (app, templates) {
 };
 
 utils.loadEmailTemplate = function (app, templateId) {
-    var templatesDir = getTemplatesDir(app);
-    var fileName = path.join(templatesDir, 'email', templateId + '.mustache');
+    const templatesDir = getTemplatesDir(app);
+    const fileName = path.join(templatesDir, 'email', templateId + '.mustache');
     if (!fs.existsSync(fileName)) {
-        var err = new Error('File not found: ' + fileName);
+        const err = new Error('File not found: ' + fileName);
         err.status = 404;
         throw err;
     }
@@ -861,21 +864,21 @@ utils.loadEmailTemplate = function (app, templateId) {
 };
 
 utils.saveEmailTemplate = function (app, templateId, templateText) {
-    var templatesDir = getTemplatesDir(app);
-    var fileName = path.join(templatesDir, 'email', templateId + '.mustache');
+    const templatesDir = getTemplatesDir(app);
+    const fileName = path.join(templatesDir, 'email', templateId + '.mustache');
     fs.writeFileSync(fileName, templateText, 'utf8');
 };
 
 utils.loadKickstarter = function (app) {
-    var configDir = getConfigDir(app);
-    var kickstarter = JSON.parse(fs.readFileSync(path.join(configDir, 'kickstarter.json'), 'utf8'));
+    const configDir = getConfigDir(app);
+    const kickstarter = JSON.parse(fs.readFileSync(path.join(configDir, 'kickstarter.json'), 'utf8'));
     if (!kickstarter.hasOwnProperty("env"))
         kickstarter.env = 2;
     return kickstarter;
 };
 
 utils.saveKickstarter = function (app, kickstarter) {
-    var configDir = getConfigDir(app);
+    const configDir = getConfigDir(app);
     fs.writeFileSync(path.join(configDir, 'kickstarter.json'), JSON.stringify(kickstarter, null, 2), 'utf8');
 };
 
@@ -886,8 +889,8 @@ utils.readDockerComposeTemplate = function (app) {
 };
 
 utils.readDockerComposeFile = function (app) {
-    var baseDir = getBaseDir(app);
-    var composeFile = path.join(baseDir, 'docker-compose.yml');
+    const baseDir = getBaseDir(app);
+    const composeFile = path.join(baseDir, 'docker-compose.yml');
     if (fs.existsSync(composeFile)) {
         return fs.readFileSync(composeFile, 'utf8');
     }
@@ -895,14 +898,14 @@ utils.readDockerComposeFile = function (app) {
 };
 
 utils.writeDockerComposeFile = function (app, composeFileContent) {
-    var baseDir = getBaseDir(app);
-    var composeFile = path.join(baseDir, 'docker-compose.yml');
+    const baseDir = getBaseDir(app);
+    const composeFile = path.join(baseDir, 'docker-compose.yml');
     fs.writeFileSync(composeFile, composeFileContent, 'utf8');
 };
 
 utils.deleteDockerComposeFile = function (app) {
-    var baseDir = getBaseDir(app);
-    var composeFile = path.join(baseDir, 'docker-compose.yml');
+    const baseDir = getBaseDir(app);
+    const composeFile = path.join(baseDir, 'docker-compose.yml');
     if (fs.existsSync(composeFile))
         fs.unlinkSync(composeFile);
 };
@@ -912,8 +915,8 @@ utils.readDockerfileTemplate = function (app) {
 };
 
 utils.readDockerfile = function (app) {
-    var configDir = getConfigDir(app);
-    var dockerFile = path.join(configDir, 'Dockerfile');
+    const configDir = getConfigDir(app);
+    const dockerFile = path.join(configDir, 'Dockerfile');
     if (fs.existsSync(dockerFile)) {
         return fs.readFileSync(dockerFile, 'utf8');
     }
@@ -921,14 +924,14 @@ utils.readDockerfile = function (app) {
 };
 
 utils.writeDockerfile = function (app, dockerFileContent) {
-    var configDir = getConfigDir(app);
-    var dockerFile = path.join(configDir, 'Dockerfile');
+    const configDir = getConfigDir(app);
+    const dockerFile = path.join(configDir, 'Dockerfile');
     fs.writeFileSync(dockerFile, dockerFileContent, 'utf8');
 };
 
 utils.deleteDockerFile = function (app) {
-    var configDir = getConfigDir(app);
-    var dockerFile = path.join(configDir, 'Dockerfile');
+    const configDir = getConfigDir(app);
+    const dockerFile = path.join(configDir, 'Dockerfile');
     if (fs.existsSync(dockerFile))
         fs.unlinkSync(dockerFile);
 };
@@ -1163,7 +1166,8 @@ utils.getVersion = function () {
                 if (packageInfo.version)
                     utils._packageVersion = packageInfo.version;
             } catch (ex) {
-                console.error(ex);
+                error('Could not read package.json!');
+                error(ex);
             }
         }
         if (!utils._packageVersion) // something went wrong

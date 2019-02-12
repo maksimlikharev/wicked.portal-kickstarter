@@ -1,10 +1,11 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
-var mustache = require('mustache');
+const express = require('express');
+const router = express.Router();
+const mustache = require('mustache');
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:deploy');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 function fwibbleHost(host) {
     if (host.startsWith('$') && !host.startsWith('${'))
@@ -21,8 +22,8 @@ function decodeHtmlEntity(str) {
 /* GET home page. */
 router.get('/', function (req, res, next) {
 
-    var dockerComposeFile = utils.readDockerComposeFile(req.app);
-    var dockerFile = utils.readDockerfile(req.app);
+    const dockerComposeFile = utils.readDockerComposeFile(req.app);
+    const dockerFile = utils.readDockerfile(req.app);
 
     let hasDockerFiles = dockerComposeFile || dockerFile;
     let glob = utils.loadGlobals(req.app);
@@ -49,12 +50,12 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/', function (req, res, next) {
-    var redirect = req.body.redirect;
+    const redirect = req.body.redirect;
 
-    var body = utils.jsonifyBody(req.body);
+    const body = utils.jsonifyBody(req.body);
 
     // Do things with the POST body.
-    console.log(body);
+    debug(body);
     if (body.createDockerfiles) {
         if (body.alpine)
             body.buildAlpine = "-alpine";
@@ -71,12 +72,12 @@ router.post('/', function (req, res, next) {
 
         // Only create a Dockerfile if using the data only method
         if (body.useDataOnly) {
-            var dockerfileTemplate = utils.readDockerfileTemplate(req.app);
-            var dockerfileContent = mustache.render(dockerfileTemplate, body);
+            const dockerfileTemplate = utils.readDockerfileTemplate(req.app);
+            const dockerfileContent = mustache.render(dockerfileTemplate, body);
             utils.writeDockerfile(req.app, dockerfileContent);
         }
     } else if (body.deleteCompose) {
-        console.error('Deleting compose file and Dockerfile');
+        error('Deleting compose file and Dockerfile');
         utils.deleteDockerComposeFile(req.app);
         utils.deleteDockerFile(req.app);
     } else if (body.editDockerfiles) {
@@ -87,7 +88,7 @@ router.post('/', function (req, res, next) {
     }
 
     // Write changes to Kickstarter.json
-    var kickstarter = utils.loadKickstarter(req.app);
+    const kickstarter = utils.loadKickstarter(req.app);
     kickstarter.deploy = 3;
     utils.saveKickstarter(req.app, kickstarter);
 

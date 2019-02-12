@@ -1,3 +1,5 @@
+/* global Vue, $, injectedData */
+
 Vue.component('wicked-ipconfig', {
     props: ['value'],
     template: `

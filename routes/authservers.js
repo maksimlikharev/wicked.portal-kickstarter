@@ -1,14 +1,15 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
-var passwordValidator = require('portal-env').PasswordValidator;
+const express = require('express');
+const router = express.Router();
+const passwordValidator = require('portal-env').PasswordValidator;
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:authservers');
 
-var utils = require('./utils');
-var pluginUtils = require('./pluginUtils');
+const utils = require('./utils');
+const pluginUtils = require('./pluginUtils');
 
 router.get('/', function (req, res, next) {
-    var glob = utils.loadGlobals(req.app);
+    const glob = utils.loadGlobals(req.app);
     // var envVars = utils.loadEnvDict(req.app);
     // utils.mixinEnv(glob, envVars);
 
@@ -68,8 +69,8 @@ function jsonifyObject(ob) {
 }
 
 router.get('/:serverId', function (req, res, next) {
-    var glob = utils.loadGlobals(req.app);
-    var envVars = utils.loadEnvDict(req.app);
+    const glob = utils.loadGlobals(req.app);
+    const envVars = utils.loadEnvDict(req.app);
     utils.mixinEnv(glob, envVars);
 
     const serverId = req.params.serverId;
@@ -79,7 +80,7 @@ router.get('/:serverId', function (req, res, next) {
         authServer.uri = authServer.config.api.uris[0];
     if (!authServer.uri)
         authServer.uri = '/auth'; // Default
-    console.log(authServer.uri);
+    debug(authServer.uri);
     const authId = `${serverId}-auth`;
     authServer.id = authId;
     authServer.config.api.name = authId;
@@ -100,7 +101,7 @@ router.get('/:serverId', function (req, res, next) {
                 continue;
             const splitPos = am.indexOf(':');
             if (splitPos < 0) {
-                console.error('Invalid auth method name: ' + am + ', expected <id>:<auth method id>');
+                error('Invalid auth method name: ' + am + ', expected <id>:<auth method id>');
                 continue;
             }
             const amServerId = am.substring(0, splitPos);
@@ -109,7 +110,7 @@ router.get('/:serverId', function (req, res, next) {
             const amAuthMethodId = am.substring(splitPos + 1);
             const authMethod = authServer.authMethods.find(a => a.name === amAuthMethodId); // jshint ignore:line
             if (!authMethod) {
-                console.warn(`Auth Method ${am} is configured for portal, but is unknown.`);
+                warn(`Auth Method ${am} is configured for portal, but is unknown.`);
                 continue;
             }
             authMethod.useForPortal = true;
@@ -136,7 +137,7 @@ router.get('/:serverId', function (req, res, next) {
 function mixinUnknownProperties(serverConfig, otherProperties) {
     for (let propName in otherProperties) {
         if (isPropertyKnown(propName)) {
-            console.error('Duplicate property name in auth server config: ' + propName + ', discarding.');
+            error('Duplicate property name in auth server config: ' + propName + ', discarding.');
             continue;
         }
         serverConfig[propName] = otherProperties[propName];
@@ -145,11 +146,11 @@ function mixinUnknownProperties(serverConfig, otherProperties) {
 
 router.post('/:serverId/api', function (req, res, next) {
     const body = utils.getJson(req.body);
-    console.log(JSON.stringify(body, null, 2));
+    debug(JSON.stringify(body, null, 2));
     const serverId = req.params.serverId;
-    console.log(body);
+    debug(body);
 
-    var glob = utils.loadGlobals(req.app);
+    const glob = utils.loadGlobals(req.app);
 
     const authServer = utils.loadAuthServer(req.app, serverId);
     const updatedInfo = body.authServer;
@@ -196,11 +197,8 @@ router.post('/:serverId/api', function (req, res, next) {
         if (thisAm.hasOwnProperty('useForPortal'))
             delete thisAm.useForPortal;
     }
-    console.log('===========================');
-    console.log(glob);
-    console.log('===========================');
-    console.log(JSON.stringify(authServer, null, 2));
-    console.log('===========================');
+    debug(glob);
+    debug(JSON.stringify(authServer, null, 2));
 
     utils.saveGlobals(req.app, glob);
     utils.saveAuthServer(req.app, serverId, authServer);

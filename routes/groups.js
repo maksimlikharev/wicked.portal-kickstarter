@@ -2,6 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:groups');
 
 const utils = require('./utils');
 

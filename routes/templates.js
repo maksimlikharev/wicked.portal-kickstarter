@@ -1,11 +1,12 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:templates');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
-var emailTemplates = [
+const emailTemplates = [
     { id: 'lost_password', name: 'Template for lost password recovery' },
     { id: 'pending_approval', name: 'New pending approval email template' },
     { id: 'verify_email', name: 'Email address verification template' }
@@ -13,10 +14,10 @@ var emailTemplates = [
 
 router.get('/', function (req, res, next) {
 
-    var chatbotTemplates = utils.loadChatbotTemplates(req.app);
+    const chatbotTemplates = utils.loadChatbotTemplates(req.app);
 
-    var templateArray = [];
-    for (var prop in chatbotTemplates) {
+    const templateArray = [];
+    for (let prop in chatbotTemplates) {
         templateArray.push({
             id: prop,
             message: chatbotTemplates[prop]
@@ -32,23 +33,23 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/', function (req, res, next) {
-    var redirect = req.body.redirect;
-    var body = utils.jsonifyBody(req.body);
-    
-    var templateObject = {};
-    for (var i=0; i<body.chatbotTemplates.length; ++i) {
-        var t = body.chatbotTemplates[i];
+    const redirect = req.body.redirect;
+    const body = utils.jsonifyBody(req.body);
+
+    const templateObject = {};
+    for (let i = 0; i < body.chatbotTemplates.length; ++i) {
+        const t = body.chatbotTemplates[i];
         templateObject[t.id] = t.message;
     }
-    
+
     utils.saveChatbotTemplates(req.app, templateObject);
-    
+
     res.redirect(redirect);
 });
 
 router.get('/email/:templateId', function (req, res, next) {
-    var text = utils.loadEmailTemplate(req.app, req.params.templateId);
-    
+    const text = utils.loadEmailTemplate(req.app, req.params.templateId);
+
     res.render('template_email', {
         configPath: req.app.get('config_path'),
         templateId: req.params.templateId,
@@ -57,8 +58,8 @@ router.get('/email/:templateId', function (req, res, next) {
 });
 
 router.post('/email/:templateId', function (req, res, next) {
-    var redirect = req.body.redirect;
-    var body = utils.jsonifyBody(req.body);
+    const redirect = req.body.redirect;
+    const body = utils.jsonifyBody(req.body);
 
     utils.saveEmailTemplate(req.app, req.params.templateId, body.emailTemplate);
 

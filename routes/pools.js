@@ -1,9 +1,10 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:pools');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 router.get('/', function (req, res, next) {
     const pools = utils.loadPools(req.app);

@@ -1,18 +1,19 @@
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var marked = require('marked');
-var express = require('express');
-var router = express.Router();
-var jade = require('jade');
+const fs = require('fs');
+const path = require('path');
+const marked = require('marked');
+const express = require('express');
+const router = express.Router();
+const jade = require('jade');
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:content');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 router.get('/', function (req, res, next) {
-    
-    var uris = utils.getContentFileNames(req.app);
-    
+
+    const uris = utils.getContentFileNames(req.app);
+
     res.render('content',
         {
             configPath: req.app.get('config_path'),
@@ -23,23 +24,23 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/', function (req, res, next) {
-    var newContent = req.body.newContent;
+    const newContent = req.body.newContent;
     if (!newContent)
         return res.redirect('/content');
-    
-    var fileParts = newContent.split('/');
-    for (var i=0; i<fileParts.length; ++i) {
+
+    const fileParts = newContent.split('/');
+    for (let i = 0; i < fileParts.length; ++i) {
         if (!/^[a-zA-Z\-_]+$/.test(fileParts[i]))
             return next(utils.makeError(400, 'Invalid URI Path, it contains invalid characters. Allowed are only a-z, A-Z, - and _.'));
     }
-    utils.createNewContent(req.app, newContent, req.body.contentType, function(err) {
+    utils.createNewContent(req.app, newContent, req.body.contentType, function (err) {
         if (err)
             return next(err);
         res.redirect('/content/' + newContent);
     });
 });
 
-var _tempViewModel = {
+let _tempViewModel = {
     authUser: {
         firstName: 'Daniel',
         lastName: 'Developer',
@@ -60,19 +61,19 @@ var _tempViewModel = {
 };
 
 router.get('/*', function (req, res, next) {
-    var pathUri = req.path;
-    if (!/^[a-zA-Z0-9\-_\/\.]+$/.test(pathUri))
+    const pathUri = req.path;
+    if (!/^[a-zA-Z0-9\-_\/\.]+$/.test(pathUri)) // eslint-disable-line
         return res.status(404).jsonp({ message: "Not found: " + pathUri });
     if (/\.\./.test(pathUri))
         return res.status(400).jsonp({ message: "Bad request. Baaad request." });
 
-    var filePath = utils.getContentFileName(req.app, pathUri);
-    console.log(filePath);
+    let filePath = utils.getContentFileName(req.app, pathUri);
+    info(filePath);
 
     if (utils.isPublic(filePath.toLowerCase())) {
         if (!fs.existsSync(filePath))
             return res.status(404).jsonp({ message: 'Not found.: ' + pathUri });
-        var contentType = utils.getContentType(filePath);
+        const contentType = utils.getContentType(filePath);
         // Just serve it
         fs.readFile(filePath, function (err, content) {
             res.setHeader('Content-Type', contentType);
@@ -80,34 +81,34 @@ router.get('/*', function (req, res, next) {
         });
         return;
     }
-    
-    //console.log(pathUri);
-    
-    var isIndex = false;
+
+    //debug(pathUri);
+
+    let isIndex = false;
     if (pathUri == '/index') {
         filePath = utils.getContentIndexFileName(req.app);
         isIndex = true;
     }
-    
-    var configPath = filePath + '.json';
-    var mdPath = filePath + '.md';
-    var jadePath = filePath + '.jade';
-    
-    var mdExists = fs.existsSync(mdPath);
-    var jadeExists = fs.existsSync(jadePath);
-    
+
+    const configPath = filePath + '.json';
+    const mdPath = filePath + '.md';
+    const jadePath = filePath + '.jade';
+
+    const mdExists = fs.existsSync(mdPath);
+    const jadeExists = fs.existsSync(jadePath);
+
     if (!mdExists && !jadeExists)
         return next(utils.makeError(404, 'Not found.'));
     if (!fs.existsSync(configPath))
         return next(utils.makeError(404, 'Companion .json file not found.'));
-    var contentPath = mdExists ? mdPath : jadePath;
-        
-    var metaInfo = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    var title = metaInfo.title;
-    var subTitle = metaInfo.subTitle;
+    const contentPath = mdExists ? mdPath : jadePath;
+
+    const metaInfo = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const title = metaInfo.title;
+    let subTitle = metaInfo.subTitle;
     if (!subTitle)
         subTitle = '';
-    var requiredGroup = '<none>';
+    let requiredGroup = '<none>';
     if (metaInfo.requiredGroup)
         requiredGroup = metaInfo.requiredGroup;
 
@@ -115,19 +116,19 @@ router.get('/*', function (req, res, next) {
     _tempViewModel.subTitle = subTitle;
     _tempViewModel.omitContainer = metaInfo.omitContainer;
     _tempViewModel.showTitle = metaInfo.showTitle;
-    
-    var content;
+
+    let content;
     if (mdExists)
         content = marked(fs.readFileSync(mdPath, 'utf8'));
     else
         content = jade.render(fs.readFileSync(jadePath, 'utf8'), _tempViewModel);
-    
-    var groups = utils.loadGroups(req.app);
-    
+
+    const groups = utils.loadGroups(req.app);
+
     res.render('content_preview', {
         configPath: req.app.get('config_path'),
         envFile: req.app.get('env_file'),
-        pathUri: pathUri, 
+        pathUri: pathUri,
         isIndex: isIndex,
         showTitle: metaInfo.showTitle,
         omitContainer: metaInfo.omitContainer,
@@ -143,33 +144,33 @@ router.get('/*', function (req, res, next) {
 });
 
 router.post('/*', function (req, res, next) {
-    var pathUri = req.path;
-    var redirect = req.body.redirect;
+    const pathUri = req.path;
+    const redirect = req.body.redirect;
 
-    var body = utils.jsonifyBody(req.body);
+    const body = utils.jsonifyBody(req.body);
 
     try {
-        var tempViewModel = JSON.parse(body.viewModel);
+        const tempViewModel = JSON.parse(body.viewModel);
         _tempViewModel = tempViewModel;
     } catch (err) {
-        console.log(err);
+        error(err);
     }
 
-    var filePath = utils.getContentFileName(req.app, pathUri);
-    var isIndex = false;
+    let filePath = utils.getContentFileName(req.app, pathUri);
+    let isIndex = false;
     if (pathUri == '/index') {
         filePath = utils.getContentIndexFileName(req.app);
         isIndex = true;
     }
-    
-    var configPath = filePath + '.json';
-    var requiredGroup = null;
+
+    const configPath = filePath + '.json';
+    let requiredGroup = null;
     if (body.requiredGroup != '<none>')
         requiredGroup = body.requiredGroup;
 
-    console.log('requiredGroup: ' + requiredGroup);
+    debug('requiredGroup: ' + requiredGroup);
 
-    var configJson = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const configJson = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     configJson.showTitle = body.showTitle;
     configJson.omitContainer = body.omitContainer;
     configJson.title = body.title;
@@ -178,7 +179,7 @@ router.post('/*', function (req, res, next) {
         configJson.requiredGroup = requiredGroup;
     else if (!requiredGroup && configJson.requiredGroup)
         delete configJson.requiredGroup;
-    
+
     fs.writeFileSync(configPath, JSON.stringify(configJson, null, 2), 'utf8');
 
     res.redirect('/content' + pathUri);

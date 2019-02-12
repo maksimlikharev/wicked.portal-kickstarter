@@ -1,6 +1,7 @@
 'use strict';
 
 /* global storeData, marked, alert, btoa, Vue, $ */
+/* eslint-disable no-console */
 
 function randomId() {
     return '_' + Math.random().toString(36).substr(2, 9);

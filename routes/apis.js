@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const yaml = require('js-yaml');
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:apis');
 
 const utils = require('./utils');
 const pluginUtils = require('./pluginUtils');
@@ -26,11 +27,11 @@ router.post('/', function (req, res, next) {
     const authServerSafeNames = {};
     for (let i = 0; i < authServers.length; ++i) {
         const serverName = authServers[i];
-        authServerSafeNames[serverName.replace(/\-/g, '_')] = serverName;
+        authServerSafeNames[serverName.replace(/-/g, '_')] = serverName;
     }
 
     if ("addApi" == body.__action) {
-        console.log("Add API");
+        info("Adding API");
 
         let apis = utils.loadApis(req.app);
         let newApiId = body.newApiId;
@@ -78,14 +79,14 @@ router.post('/', function (req, res, next) {
         thisApi.plans = plans;
 
         const authServers = [];
-        console.log(thisApi);
+        debug(thisApi);
         for (let authServerName in thisApi.authServers) {
-            console.log('authServerName: ' + authServerName);
+            debug('authServerName: ' + authServerName);
             const realName = authServerSafeNames[authServerName];
             if (thisApi.authServers[authServerName] && realName)
                 authServers.push(realName);
         }
-        console.log(authServers);
+        debug(authServers);
         if (authServers.length > 0)
             thisApi.authServers = authServers;
         else if (thisApi.authServers)
@@ -139,7 +140,7 @@ router.get('/:apiId', function (req, res, next) {
             scopes: {}
         };
     }
-    console.log(thisApi);
+    debug(thisApi);
     const config = utils.loadApiConfig(req.app, apiId);
     if (!config.plugins)
         config.plugins = [];
@@ -186,7 +187,7 @@ router.get('/:apiId', function (req, res, next) {
 
 router.post('/:apiId/api', function (req, res, next) {
     const body = utils.getJson(req.body);
-    // console.log(JSON.stringify(body, null, 2));
+    // debug(JSON.stringify(body, null, 2));
     const apiId = req.params.apiId;
     const apis = utils.loadApis(req.app);
     body.api.tags = body.api.tags ? body.api.tags.filter(t => !!t) : [];
