@@ -30,7 +30,12 @@ if [ ! -z "${LOCAL_UID}" ] && [ ! -z "${LOCAL_GID}" ]; then
         echo "Running with UID ${LOCAL_UID} and GID ${LOCAL_GID}."
         echo "Local username: $username"
         startedNode=1
-        gosu $username node bin/kickstart "$@"
+        # Use gosu/su-exec to start node as a different user
+        gosu_command="gosu"
+        if [[ -z "$(which gosu)" ]]; then
+            gosu_command="su-exec"
+        fi
+        ${gosu_command} ${username} node bin/kickstart "$@"
     fi
 fi
 
