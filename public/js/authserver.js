@@ -81,6 +81,16 @@ Vue.component('auth-method', {
             this.newAdfsGroup = '';
             this.newWickedGroup = '';
             this.$set(this.value.config.defaultGroups, adfsGroup, wickedGroup);
+        },
+        selectAllApis: function () {
+            for (let apiId in this.value.apis) {
+                this.$set(this.value.apis, apiId, true);
+            }
+        },
+        deselectAllApis: function () {
+            for (let apiId in this.value.apis) {
+                this.$set(this.value.apis, apiId, false);
+            }
         }
     },
     template:
@@ -197,6 +207,16 @@ Vue.component('auth-method', {
         <div v-else>
             <p><i>Unknown auth method type. To change this, please edit the JSON file directly.</i></p>
         </div>
+
+        <br>
+
+        <wicked-panel :open=false 
+            type="success" 
+            title="Supported APIs">
+            <button v-on:click="selectAllApis" class="btn btn-sm btn-primary">Select all</button>
+            <button v-on:click="deselectAllApis" class="btn btn-sm btn-default">Deselect all</button>
+            <wicked-checkbox v-for="(v, apiId) in value.apis" v-model="value.apis[apiId]" :label="apiId" />
+        </wicked-panel>
     </wicked-panel>
     `
 });
@@ -223,7 +243,8 @@ Vue.component('add-auth-method', {
                 name: this.authMethodId,
                 friendlyShort: 'Short friendly name',
                 friendlyLong: 'Long friendly name',
-                config: createDefaultConfig(this.selectedType, this.authMethodId)
+                config: createDefaultConfig(this.selectedType, this.authMethodId),
+                apis: JSON.parse(JSON.stringify(injectedData.oauthApis))
             });
         }
     },
@@ -265,30 +286,35 @@ Vue.component('password-validation', {
 });
 
 function createDefaultConfig(authMethodType, authMethodId) {
+    let defaultConfig;
     switch (authMethodType) {
         case 'local':
-            return {
+            defaultConfig = {
                 trustUsers: false,
                 disableSignup: false
             };
+            break;
         case 'external':
-            return {
+            defaultConfig = {
                 validateUserPassUrl: 'http://your-service.default.cluster.local:2000/login',
                 allowRefreshUrl: 'http://your-service.default.cluster.local:2000/refresh'
             };
+            break;
         case 'github':
         case 'google':
-            return {
+            defaultConfig = {
                 clientId: 'your-client-id',
                 clientSecret: 'your-client-secret'
             };
+            break;
         case 'twitter':
-            return {
+            defaultConfig = {
                 consumerKey: 'twitter-consumer-key',
                 consumerSecret: 'twitter-consumer-secret'
             };
+            break;
         case 'oauth2':
-            return {
+            defaultConfig = {
                 clientId: 'your-client-id',
                 clientSecret: 'your-client-secret',
                 endpoints: {
@@ -303,8 +329,9 @@ function createDefaultConfig(authMethodType, authMethodId) {
                 lastNameField: 'family_name',
                 emailField: 'email'
             };
+            break;
         case 'adfs':
-            return {
+            defaultConfig = {
                 clientId: 'your-client-id',
                 clientSecret: 'your-client-secret',
                 endpoints: {
@@ -322,9 +349,10 @@ function createDefaultConfig(authMethodType, authMethodId) {
                     "DOMAIN\\_Some_Group": "dev"
                 }
             };
+            break;
         case 'saml': {
             const envVarPrefix = '$PORTAL_AUTH_SAML_' + authMethodId.toUpperCase().replace(/-/g, '_') + '_';
-            return {
+            defaultConfig = {
                 trustUsers: true,
                 profile: JSON.stringify({
                     "sub": "{{{your_id}}}",
@@ -350,10 +378,13 @@ function createDefaultConfig(authMethodType, authMethodId) {
                     "allow_unencrypted_assertion": true
                 }, null, 2)
             };
+            break;
         }
         default:
-            return {};
+            defaultConfig = {};
+            break;
     }
+    return defaultConfig;
 }
 
 function displayCallbackUris(uri, authMethodId) {

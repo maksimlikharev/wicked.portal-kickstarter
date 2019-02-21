@@ -18,7 +18,7 @@ router.get('/', function (req, res, next) {
         // If we only have one, redirect there directly
         return res.redirect(`/authservers/${authServerNames[0]}`);
     }
- 
+
     res.render('authservers',
         {
             configPath: req.app.get('config_path'),
@@ -84,7 +84,8 @@ router.get('/:serverId', function (req, res, next) {
     const authId = `${serverId}-auth`;
     authServer.id = authId;
     authServer.config.api.name = authId;
-    
+
+
     let origPlugins = [];
     if (authServer.config && authServer.config.plugins)
         origPlugins = authServer.config.plugins;
@@ -117,6 +118,30 @@ router.get('/:serverId', function (req, res, next) {
         }
     }
 
+    // Mix in api auth methods as well
+    const apis = utils.loadApis(req.app);
+    // console.log(JSON.stringify(apis, null, 2));
+    for (let authMethod of authServer.authMethods) {
+        authMethod.apis = {};
+        for (let api of apis.apis) {
+            if (api.auth !== 'oauth2')
+                continue;
+            const authMethodName = `${serverId}:${authMethod.name}`;
+            if (api.authMethods.indexOf(authMethodName) >= 0)
+                authMethod.apis[api.id] = true;
+            else
+                authMethod.apis[api.id] = false;
+        }
+    }
+
+    // For new auth methods
+    const oauthApis = {};
+    for (let api of apis.apis) {
+        if (api.auth !== 'oauth2')
+            continue;
+        oauthApis[api.id] = false;
+    }
+
     const groups = utils.loadGroups(req.app);
     const passwordStrategies = passwordValidator.getStrategies();
 
@@ -128,7 +153,8 @@ router.get('/:serverId', function (req, res, next) {
         authServer: authServer,
         plugins: plugins,
         groups: groups,
-        passwordStrategies: passwordStrategies
+        passwordStrategies: passwordStrategies,
+        oauthApis: oauthApis
     };
 
     res.render('authserver', viewModel);
@@ -197,11 +223,41 @@ router.post('/:serverId/api', function (req, res, next) {
         if (thisAm.hasOwnProperty('useForPortal'))
             delete thisAm.useForPortal;
     }
+
+    // Now do the same for the APIs; first strip all method IDs from this Auth Server
+    const apis = utils.loadApis(req.app);
+    for (let api of apis.apis) {
+        if (api.auth !== 'oauth2')
+            continue;
+        const strippedList = [];
+        const apiAuthMethods = api.authMethods ? api.authMethods : [];
+        for (let authMethodId of apiAuthMethods) {
+            if (!authMethodId.startsWith(`${serverId}:`))
+                strippedList.push(authMethodId);
+        }
+        api.authMethods = strippedList;
+    }
+    // And then add them back from the auth server JSON (and delete the "apis" object)
+    for (let am of authMethods) {
+        for (let apiId in am.apis) {
+            if (am.apis[apiId]) {
+                const thisApi = apis.apis.find(a => a.id === apiId);
+                if (!thisApi) {
+                    warn(`Could not add auth method ${am.name} to API ${apiId}, API not found.`);
+                }
+                thisApi.authMethods.push(`${serverId}:${am.name}`);
+            }
+        }
+        // Delete the apis object
+        delete am.apis;
+    }
+
     debug(glob);
     debug(JSON.stringify(authServer, null, 2));
 
     utils.saveGlobals(req.app, glob);
     utils.saveAuthServer(req.app, serverId, authServer);
+    utils.saveApis(req.app, apis);
 
     res.status(204).json({ message: 'OK' });
 });
