@@ -103,6 +103,7 @@ Vue.component('auth-method', {
     >
         <wicked-checkbox v-model="value.enabled" label="Enabled" />
         <wicked-checkbox v-model="value.useForPortal" label="Allow for Portal/wicked login" />
+        <wicked-checkbox v-model="value.protected" label="Protected Auth Method (not visible in Portal)" />
         <wicked-input v-model="value.type" label="Type:" :readonly=true />
         <wicked-input v-model="value.name" label="Method ID:" :disallow-env-var=true :readonly=true></wicked-input>
         <wicked-input v-model="value.friendlyShort" label="Friendly short name of this auth method:" :env-var="envPrefix + 'SHORTDESC'"></wicked-input>
