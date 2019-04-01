@@ -114,6 +114,7 @@ router.get('/:apiId', function (req, res, next) {
     const apiId = req.params.apiId;
     const safeApiId = utils.makeSafeId(apiId);
     const apis = utils.loadApis(req.app);
+    const glob = utils.loadGlobals(req.app);
     const thisApi = apis.apis.find(a => a.id === apiId);
     if (!thisApi.hasOwnProperty('requiredGroup'))
         thisApi.requiredGroup = '';
@@ -142,6 +143,8 @@ router.get('/:apiId', function (req, res, next) {
     }
     debug(thisApi);
     const config = utils.loadApiConfig(req.app, apiId);
+    config.api.host = (config.api.host) ? config.api.host : glob.network.apiHost;
+
     if (!config.plugins)
         config.plugins = [];
     const plugins = pluginUtils.makeViewModel(config.plugins);
