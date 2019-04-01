@@ -63,6 +63,7 @@ Vue.component('wicked-api', {
             <select v-model="value.auth" class="form-control">
                 <option value="key-auth">Authorize with simple API Keys (key-auth)</option>
                 <option value="oauth2">Authorize using OAuth 2.0 (oauth2)</option>
+                <option value="none">Authorization not required</option>
             </select>
             <wicked-checkbox v-model="value.hide_credentials" label="<b>Hide Credentials</b> from upstream server"/>
         </div>
@@ -150,6 +151,7 @@ Vue.component('wicked-api-kong', {
     props: ['value', 'envPrefix'],
     template: `
     <wicked-panel :open=true title="Kong (Gateway) Configuration" type="primary">
+        <wicked-input v-model="value.api.host" label="API Host:" hint="API Host, it could be alternate DNS for the service" :env-var="envPrefix + 'HOST'" />
         <wicked-input v-model="value.api.upstream_url" label="Upstream (backend) URL:" hint="The URL under which the service can be found, <strong>as seen from the Kong container</strong>" :env-var="envPrefix + 'UPSTREAM_URL'" />
         <wicked-string-array v-model="value.api.uris" :allow-empty=false label="Request URIs:" hint="This is the list of prefix you will use for this API on the API Gateway, e.g. <code>/petstore/v1</code>." />
         <wicked-checkbox v-model="value.api.strip_uri" label="<b>Strip Uri</b>. Check this box if you don't want to pass the uri to the backend URL as well. Normally you wouldn't want that." />
