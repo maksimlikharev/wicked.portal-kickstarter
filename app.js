@@ -44,11 +44,6 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// Combined == Apache style logs
-// if (app.get('env') == 'development')
-//     app.use(logger('dev'));
-// else
-//     app.use(logger('combined'));
 const accessLog = require('portal-env').Logger('kickstarter:access').info;
 app.use(logger(function (tokens, req, res) {
     accessLog(`${tokens.method(req, res)} ${tokens.url(req, res)} ${tokens.status(req, res)} - ${tokens['response-time'](req, res)}ms`);
