@@ -1,5 +1,6 @@
-FROM ${DOCKER_PREFIX}portal-env:${PORTAL_ENV_TAG}${BUILD_ALPINE}
+FROM ${DOCKER_PREFIX}env:${PORTAL_ENV_TAG}${BUILD_ALPINE}
 
+ENV LOG_PLAIN true
 USER root
 
 ENTRYPOINT ["/usr/src/app/bin/docker-entrypoint.sh"]

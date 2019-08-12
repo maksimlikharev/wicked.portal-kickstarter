@@ -1,9 +1,10 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:ssl');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 router.get('/', function (req, res, next) {
     let glob = utils.loadGlobals(req.app);
@@ -16,7 +17,7 @@ router.get('/', function (req, res, next) {
 
 router.post('/', function (req, res, next) {
     let validDays = req.body.validDays - 0; // cast to number
-    console.log('validDays: ' + validDays);
+    debug('validDays: ' + validDays);
     if (validDays <= 0 || isNaN(validDays)) {
         return next(new Error('Invalid validDays argument. Must be a number greater than zero.'));
     }

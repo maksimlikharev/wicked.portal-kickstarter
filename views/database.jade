@@ -6,16 +6,16 @@ block scripts
 block content
     .jumbotron
         .container
-            h1 IP, DB and DNS
+            h1 Postgres and Redis
             
-            p Specify IP, database paths and DNS configuration
+            p Specify Postgres and Redis configuration settings
     
     .container
 
         div(id="vueBase")
-            wicked-ipconfig(v-model="glob")
+            wicked-database(v-model="glob")
             br
-            nav-buttons(this-page="ipconfig")
+            nav-buttons(this-page="database")
 
 block afterScripts
     script(type="text/javascript").
@@ -23,4 +23,4 @@ block afterScripts
             glob: !{JSON.stringify(glob)}
         };
 
-    script(src='/js/ipconfig.js')
+    script(src='/js/database.js')

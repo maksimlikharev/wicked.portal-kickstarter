@@ -17,16 +17,16 @@ services:
     - "STATS_PORT=1936"
     restart: unless-stopped
 
-  kongdb-data:
+  wicked-database-data:
     image: postgres:{{postgresVersion}}
     volumes:
     - "/var/lib/postgresql/data"
     command: "/bin/true"
 
-  kong-database:
+  wicked-database:
     image: postgres:{{postgresVersion}}
     volumes_from:
-    - "kongdb-data"
+    - "wicked-database-data"
     environment:
     - "POSTGRES_USER=kong"
     - "POSTGRES_PASSWORD=kong"
@@ -35,7 +35,7 @@ services:
   kong:
     image: {{{dockerPrefix}}}kong:{{dockerTag}}
     depends_on:
-    - "kong-database"
+    - "wicked-database"
     security_opt:
     - seccomp:unconfined
     expose:
@@ -47,32 +47,40 @@ services:
     - "EXCLUDE_PORTS=7946,8001,8443,8444"
     - "EXTRA_SETTINGS=http-request set-header X-Forwarded-Port %[dst_port]"
     - "SSL_CERT=${GATEWAY_PEM}"
+    - "KONG_PG_HOST=wicked-database"
     restart: unless-stopped
 
+{{#useDataOnly}}
+  # If you want to switch to the git clone method, remove this container here,
+  # and also from the "volumes_from" section of the portal-api container.
+  # Docs here: https://github.com/Haufe-Lexware/wicked.haufe.io/blob/master/doc/static-config-git-clone.md
   portal-api-data-static:
     build: 
       context: static
     volumes:
     - "/var/portal-api/static"
     command: "/bin/true"
-
-  portal-api-data-dynamic:
-    image: {{{dockerPrefix}}}portal-api:{{dockerTag}}{{buildAlpine}}
-    volumes:
-    - "/var/portal-api/dynamic"
-    command: "/bin/true"
+{{/useDataOnly}}
 
   portal-api:
-    image: {{{dockerPrefix}}}portal-api:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}api:{{dockerTag}}{{buildAlpine}}
+{{#useDataOnly}}
+    # Remove the "volumes_from" section when moving from "build data-only container" to
+    # using the git clone method. See above.
     volumes_from:
     - "portal-api-data-static"
-    - "portal-api-data-dynamic"
+{{/useDataOnly}}
     restart: unless-stopped
     environment:
     - NODE_ENV
+    - LOG_LEVEL
     - DEBUG
+{{#portalHostVarName}}
     - {{portalHostVarName}}
+{{/portalHostVarName}}
+{{#apiHostVarName}}
     - {{apiHostVarName}}
+{{/apiHostVarName}}
     - PORTAL_CONFIG_KEY
     - GIT_REPO
     - GIT_BRANCH
@@ -80,45 +88,62 @@ services:
     - GIT_REVISION
 
   portal:
-    image: {{{dockerPrefix}}}portal:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}ui:{{dockerTag}}{{buildAlpine}}
     depends_on:
     - "portal-api"
     - "portal-redis"
+    - "portal-auth"
     expose:
     - "3000"
     environment:
     - "VIRTUAL_HOST=https://{{portalHost}}:443"
     - "VIRTUAL_HOST_WEIGHT=0"
     - "SSL_CERT=${PORTAL_PEM}"
-    - "DEBUG"
+    - "LOG_LEVEL"
+    restart: unless-stopped
+
+  portal-auth:
+    image: {{{dockerPrefix}}}auth:{{dockerTag}}{{buildAlpine}}
+    depends_on:
+    - "portal-api"
+    - "portal-redis"
+    expose:
+    - "3010"
+    environment:
+    - "LOG_LEVEL"
     restart: unless-stopped
 
   portal-redis:
     image: redis:{{redisVersion}}
     expose:
     - "6379"
+    restart: unless-stopped
 
   portal-kong-adapter:
-    image: {{{dockerPrefix}}}portal-kong-adapter:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}kong-adapter:{{dockerTag}}{{buildAlpine}}
     depends_on:
     - "portal-api"
     - "kong"
     restart: unless-stopped
     environment:
-    - DEBUG
+    - "LOG_LEVEL"
 
+{{#useMailer}}
   portal-mailer:
-    image: {{{dockerPrefix}}}portal-mailer:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}mailer:{{dockerTag}}{{buildAlpine}}
     restart: unless-stopped
     depends_on:
     - "portal-api"
     environment:
-    - DEBUG
+    - "LOG_LEVEL"
+{{/useMailer}}
 
+{{#useChatbot}}
   portal-chatbot:
-    image: {{{dockerPrefix}}}portal-chatbot:{{dockerTag}}{{buildAlpine}}
+    image: {{{dockerPrefix}}}chatbot:{{dockerTag}}{{buildAlpine}}
     restart: unless-stopped
     depends_on:
     - "portal-api"
     environment:
-    - DEBUG
+    - "LOG_LEVEL"
+{{/useChatbot}}

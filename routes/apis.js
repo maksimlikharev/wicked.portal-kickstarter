@@ -1,55 +1,37 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const yaml = require('js-yaml');
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:apis');
 
-var utils = require('./utils');
-var pluginUtils = require('./pluginUtils');
+const utils = require('./utils');
+const pluginUtils = require('./pluginUtils');
 
 router.get('/', function (req, res, next) {
-    var apis = utils.loadApis(req.app);
-    var plans = utils.loadPlans(req.app);
-    var groups = utils.loadGroups(req.app);
-    var authServers = utils.getAuthServers(req.app);
-    for (let i = 0; i < apis.apis.length; ++i) {
-        if (!apis.apis[i].authServers) {
-            apis.apis[i].authServers = {};
-        } else {
-            const obAuthServers = {};
-            for (let j = 0; j < apis.apis[i].authServers.length; ++j) {
-                const safeName = apis.apis[i].authServers[j].replace(/\-/g, '_');
-                obAuthServers[safeName] = true;
-            }
-            apis.apis[i].authServers = obAuthServers;
-        }
-    }
-    console.log(JSON.stringify(apis, null, 2));
-
+    const apis = utils.loadApis(req.app);
     res.render('apis',
         {
             configPath: req.app.get('config_path'),
             envFile: req.app.get('env_file'),
             title: 'wicked - Kickstarter',
-            apis: apis.apis,
-            plans: plans.plans,
-            groups: groups.groups,
-            authServers: authServers
+            apis: apis.apis
         });
 });
 
 router.post('/', function (req, res, next) {
-    var redirect = req.body.redirect;
-    var body = utils.jsonifyBody(req.body);
+    const redirect = req.body.redirect;
+    const body = utils.jsonifyBody(req.body);
 
-    var authServers = utils.getAuthServers(req.app);
-    var authServerSafeNames = {};
+    const authServers = utils.getAuthServers(req.app);
+    const authServerSafeNames = {};
     for (let i = 0; i < authServers.length; ++i) {
         const serverName = authServers[i];
-        authServerSafeNames[serverName.replace(/\-/g, '_')] = serverName;
+        authServerSafeNames[serverName.replace(/-/g, '_')] = serverName;
     }
 
     if ("addApi" == body.__action) {
-        console.log("Add API");
+        info("Adding API");
 
         let apis = utils.loadApis(req.app);
         let newApiId = body.newApiId;
@@ -63,7 +45,8 @@ router.post('/', function (req, res, next) {
             desc: newApiId,
             auth: "key-auth",
             tags: [],
-            plans: []
+            plans: [],
+            authMethods: []
         });
 
         utils.prepareNewApi(req.app, newApiId);
@@ -82,7 +65,7 @@ router.post('/', function (req, res, next) {
         return res.redirect(redirect);
     }
 
-    for (var i = 0; i < body.apis.length; ++i) {
+    for (let i = 0; i < body.apis.length; ++i) {
         let thisApi = body.apis[i];
         let tags = thisApi.tags.split(',');
         if (thisApi.tags !== '')
@@ -96,14 +79,14 @@ router.post('/', function (req, res, next) {
         thisApi.plans = plans;
 
         const authServers = [];
-        console.log(thisApi);
+        debug(thisApi);
         for (let authServerName in thisApi.authServers) {
-            console.log('authServerName: ' + authServerName);
+            debug('authServerName: ' + authServerName);
             const realName = authServerSafeNames[authServerName];
             if (thisApi.authServers[authServerName] && realName)
                 authServers.push(realName);
         }
-        console.log(authServers);
+        debug(authServers);
         if (authServers.length > 0)
             thisApi.authServers = authServers;
         else if (thisApi.authServers)
@@ -120,7 +103,7 @@ router.post('/', function (req, res, next) {
     utils.saveApis(req.app, apis);
 
     // Write changes to Kickstarter.json
-    var kickstarter = utils.loadKickstarter(req.app);
+    const kickstarter = utils.loadKickstarter(req.app);
     kickstarter.apis = 3;
     utils.saveKickstarter(req.app, kickstarter);
 
@@ -128,49 +111,120 @@ router.post('/', function (req, res, next) {
 });
 
 router.get('/:apiId', function (req, res, next) {
-    var apiId = req.params.apiId;
-    var config = utils.loadApiConfig(req.app, apiId);
-    var envDict = utils.loadEnvDict(req.app);
-    //utils.mixinEnv(config.api, envVars);
-    utils.mixinEnv(config.api, envDict);
-    var apis = {};
-    var safeApiId = utils.makeSafeId(apiId);
-    apis[safeApiId] = { api: config.api };
-    var plugins = pluginUtils.makeViewModel(config.plugins);
-    console.log(JSON.stringify(plugins, null, 2));
-    res.render('apiconfig',
-        {
-            configPath: req.app.get('config_path'),
-            apiId: apiId,
-            safeApiId: safeApiId,
-            apis: apis,
-            plugins: plugins
-        });
+    const apiId = req.params.apiId;
+    const safeApiId = utils.makeSafeId(apiId);
+    const apis = utils.loadApis(req.app);
+    const glob = utils.loadGlobals(req.app);
+    const thisApi = apis.apis.find(a => a.id === apiId);
+    if (!thisApi.hasOwnProperty('requiredGroup'))
+        thisApi.requiredGroup = '';
+    if (!thisApi.hasOwnProperty('registrationPool'))
+        thisApi.registrationPool = '';
+    if (!thisApi.authMethods || !Array.isArray(thisApi.authMethods))
+        thisApi.authMethods = [];
+    if (thisApi.settings) {
+        if (thisApi.settings.scopes) {
+            if (typeof (thisApi.settings.scopes) === 'string') {
+                if (thisApi.settings.scopes) {
+                    const oldScope = thisApi.settings.scopes;
+                    thisApi.settings.scopes = {};
+                    thisApi.settings.scopes[oldScope] = oldScope;
+                } else {
+                    thisApi.settings.scopes = {};
+                }
+            }
+        } else {
+            thisApi.settings.scopes = {};
+        }
+    } else {
+        thisApi.settings = {
+            scopes: {}
+        };
+    }
+    debug(thisApi);
+    const config = utils.loadApiConfig(req.app, apiId);
+    config.api.host = (config.api.host) ? config.api.host : glob.network.apiHost;
+
+    if (!config.plugins)
+        config.plugins = [];
+    const plugins = pluginUtils.makeViewModel(config.plugins);
+    const apiDesc = utils.loadApiDesc(req.app, apiId);
+    let apiSwagger;
+    if (utils.existsSwagger(req.app, apiId))
+        apiSwagger = JSON.stringify(utils.loadSwagger(req.app, apiId), null, 2);
+    else
+        apiSwagger = "{}";
+
+    // Assemble all auth methods
+    const authServerNames = utils.getAuthServers(req.app);
+    const authMethods = [];
+    for (let as in authServerNames) {
+        const asName = authServerNames[as];
+        const authServer = utils.loadAuthServer(req.app, asName);
+        for (let i = 0; i < authServer.authMethods.length; ++i) {
+            const thisAm = authServer.authMethods[i];
+            thisAm.serverId = asName;
+            authMethods.push(thisAm);
+        }
+    }
+
+    const groups = utils.loadGroups(req.app);
+    const plans = utils.loadPlans(req.app);
+    const pools = utils.loadPools(req.app);
+
+    res.render('apisettings', {
+        configPath: req.app.get('config_path'),
+        safeApiId: safeApiId,
+        api: thisApi,
+        plugins: plugins,
+        config: config,
+        desc: apiDesc,
+        swagger: apiSwagger,
+        authMethods: authMethods,
+        groups: groups,
+        plans: plans,
+        pools: pools,
+        settings: {}
+    });
 });
 
-router.post('/:apiId', function (req, res, next) {
-    var apiId = req.params.apiId;
-    var redirect = req.body.redirect;
-    var safeApiId = apiId.replace(/\-/g, '');
+router.post('/:apiId/api', function (req, res, next) {
+    const body = utils.getJson(req.body);
+    // debug(JSON.stringify(body, null, 2));
+    const apiId = req.params.apiId;
+    const apis = utils.loadApis(req.app);
+    body.api.tags = body.api.tags ? body.api.tags.filter(t => !!t) : [];
+    const apiIndex = apis.apis.findIndex(a => a.id === apiId);
+    apis.apis[apiIndex] = body.api;
+    utils.saveApis(req.app, apis);
 
-    var envVars = utils.loadEnvDict(req.app);
+    const plugins = pluginUtils.makePluginsArray(body.plugins);
+    const config = body.config;
+    config.api.uris = config.api.uris.filter(u => !!u);
 
-    var body = utils.jsonifyBody(req.body);
-
-    var plugins = pluginUtils.makePluginsArray(body.plugins);
-    //console.log(JSON.stringify(plugins, null, 2));
-
-    var config = {
-        api: body.apis[safeApiId].api,
+    const kongConfig = {
+        api: config.api,
         plugins: plugins
     };
-    config.api.strip_uri = (!config.api.strip_uri) ? false : config.api.strip_uri;
-    utils.mixoutEnv(config.api, envVars, 'PORTAL_APIS_' + safeApiId.toUpperCase());
-
-    utils.saveApiConfig(req.app, apiId, config);
-    utils.saveEnvDict(req.app, envVars, "default");
-
-    res.redirect(redirect);
+    utils.saveApiConfig(req.app, apiId, kongConfig);
+    utils.saveApiDesc(req.app, apiId, body.desc);
+    let swagger = '';
+    let message = 'OK';
+    try {
+        swagger = JSON.parse(body.swagger);
+    } catch (err) {
+        // If we ran into trouble, we'll try YAML
+        try {
+            swagger = yaml.safeLoad(body.swagger);
+        } catch (err) {
+            // OK, not good, we'll store as is and return a message
+            swagger = body.swagger;
+            message = 'The Swagger content is neither valid JSON not valid YAML; the content will not render in the Swagger UI component.';
+        }
+    }
+    // Whatever we had, let's store it.
+    utils.saveSwagger(req.app, apiId, swagger);
+    res.json({ message: message });
 });
 
 module.exports = router;

@@ -1,67 +1,40 @@
 'use strict';
 
-var express = require('express');
-var fs = require('fs');
-var path = require('path');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const { debug, info, warn, error } = require('portal-env').Logger('kickstarter:groups');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 router.get('/', function (req, res, next) {
-    var groups = utils.loadGroups(req.app);
-    var glob = utils.loadGlobals(req.app);
-    console.log(JSON.stringify(groups, null, 2));
-    var userGroup = null;
-    if (!glob.validatedUserGroup)
-        userGroup = '<none>';
-    else
-        userGroup = glob.validatedUserGroup;
+    const groups = utils.loadGroups(req.app);
+    const glob = utils.loadGlobals(req.app);
 
-    for (var i=0; i<groups.groups.length; ++i)
-        groups.groups[i].alt_ids = groups.groups[i].alt_ids.join(','); 
-    
-    res.render('groups',
-        {
-            configPath: req.app.get('config_path'),
-            groups: groups.groups,
-            validatedUserGroup: userGroup
-        });
+    // Remove old alt_ids if present, add explicit properties
+    groups.groups.forEach(g => {
+        if (g.hasOwnProperty('alt_ids'))
+            delete g.alt_ids;
+        if (!g.hasOwnProperty('adminGroup'))
+            g.adminGroup = false;
+        if (!g.hasOwnProperty('approverGroup'))
+            g.approverGroup = false;
+    });
+
+    res.render('groups', {
+        glob: glob,
+        configPath: req.app.get('config_path'),
+        groups: groups,
+    });
 });
 
-router.post('/', function (req, res, next) {
-    var redirect = req.body.redirect;
-    // Do things with the POST body.
-    console.log(JSON.stringify(req.body, null, 2));
-
-    var body = utils.jsonifyBody(req.body);
-    var groups = {
-        groups: body.groups
-    };
-    for (var i=0; i<groups.groups.length; ++i) {
-        if (groups.groups[i].alt_ids)
-            groups.groups[i].alt_ids = groups.groups[i].alt_ids.split(',');
-        else
-            groups.groups[i].alt_ids = [];
-    } 
-    if (body.__action == 'addGroup')
-        groups.groups.push({
-            id: 'newgroup',
-            name: 'New Group',
-            alt_ids: [],
-            adminGroup: false
-        });
-    else if (body.__action == 'deleteGroup') {
-        var indexToDelete = Number(body.__object);
-        groups.groups.splice(indexToDelete, 1);
-    }
-        
+router.post('/api', function (req, res, next) {
+    const body = utils.getJson(req.body);
+    const groups = body.groups;
     utils.saveGroups(req.app, groups);
 
     // Changes to validated user group?
-    var validatedGroup = body.validatedUserGroup;
-    if (validatedGroup == '<none>')
-        validatedGroup = null;
-    var glob = utils.loadGlobals(req.app);
+    const validatedGroup = body.glob.validatedUserGroup;
+    const glob = utils.loadGlobals(req.app);
     if (glob.validatedUserGroup != validatedGroup) {
         if (!validatedGroup)
             delete glob.validatedUserGroup;
@@ -71,11 +44,11 @@ router.post('/', function (req, res, next) {
     }
 
     // Write changes to Kickstarter.json
-    var kickstarter = utils.loadKickstarter(req.app);
+    const kickstarter = utils.loadKickstarter(req.app);
     kickstarter.groups = 3;
     utils.saveKickstarter(req.app, kickstarter);
 
-    res.redirect(redirect);
+    res.json({ message: "OK" });
 });
 
 module.exports = router;
